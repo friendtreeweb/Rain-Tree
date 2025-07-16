@@ -1,0 +1,249 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rain Tree Sorter</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #d1f0e1; /* hijau tosca muda */
+    color: #065f46; /* hijau tosca gelap */
+    text-align: center;
+    margin: 20px;
+  }
+  h1 {
+    margin-bottom: 5px;
+  }
+  #category-select button {
+    background-color: #2dd4bf;
+max-width: 600px;
+  }
+  .member {
+    width: 250px;
+    margin: 0 20px;
+    border: 3px solid #2dd4bf;
+    border-radius: 10px;
+    background: white;
+    padding: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .member img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  .member-name {
+    margin-top: 8px;
+    font-weight: bold;
+    font-size: 18px;
+  }
+  #draw-button {
+    padding: 10px 20px;
+    margin: 10px auto;
+    background: #14b8a6;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    display: block;
+  }
+  #draw-button:hover {
+    background: #0f766e;
+  }
+  #result-area {
+    max-width: 600px;
+    margin: 20px auto;
+    text-align: left;
+    background: #ccf0e9;
+    border-radius: 10px;
+    padding: 15px;
+  }
+  #result-area h2 {
+    color: #065f46;
+  }
+  #restart-button {
+    margin-top: 20px;
+    background-color: #059669;
+    border: none;
+    color: white;
+    padding: 12px 25px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #restart-button:hover {
+    background-color: #047857;
+  }
+</style>
+</head>
+<body>
+
+<h1>Rain Tree Sorter</h1>
+<p>Pilih anggota yang kamu suka, atau pilih Draw jika sama-sama bagus!</p>
+
+<div id="category-select">
+<button data-cat="general" class="active">Umum</button>
+  <button data-cat="visual">Visual</button>
+  <button data-cat="talent">Bakat</button>
+  <button data-cat="comedian">Pelawak</button>
+</div>
+
+<div id="battle-area">
+  <div class="member" id="left-member">
+    <img src="" alt="Left Member" id="left-img" />
+    <div class="member-name" id="left-name"></div>
+  </div>
+  <div class="member" id="right-member">
+    <img src="" alt="Right Member" id="right-img" />
+    <div class="member-name" id="right-name"></div>
+  </div>
+</div>
+<button id="draw-button">Draw</button>
+
+<div id="result-area" style="display:none;">
+  <h2>Hasil Sorting</h2>
+  <ol id="result-list"></ol>
+  <button id="restart-button">Coba Lagi</button>
+</div>
+
+<script>
+  const members = {
+    general: [
+      "Ayase", "Endo", "Yoshikawa", "Mizuno", "Ichihara", "Sato", "Katase",
+      "Hayama", "Nino", "Momose", "Suzuno", "Nakamata", "Hashimoto",
+      "Kurosawa", "Kato", "Nagase", "Asamiya"
+    ],
+    visual: [
+      "Endo", "Yoshikawa", "Suzuno", "Kurosawa", "Katase", "Momose",
+      "Nakamata", "Nino"
+    ],
+    talent: [
+      "Ichihara", "Sato", "Kato", "Nagase", "Asamiya", "Hashimoto"
+    ],
+    comedian: [
+      "Hayama", "Mizuno", "Ayase", "Suzuno"
+    ]
+  };
+
+  let currentCategory = "general";
+  let pool = [];
+let ranking = {};
+  let totalBattles = 0;
+
+  const leftMemberEl = document.getElementById("left-member");
+  const rightMemberEl = document.getElementById("right-member");
+  const leftImgEl = document.getElementById("left-img");
+  const rightImgEl = document.getElementById("right-img");
+  const leftNameEl = document.getElementById("left-name");
+  const rightNameEl = document.getElementById("right-name");
+  const drawButton = document.getElementById("draw-button");
+  const resultArea = document.getElementById("result-area");
+  const resultList = document.getElementById("result-list");
+  const restartButton = document.getElementById("restart-button");
+  const categoryButtons = document.querySelectorAll("#category-select button");
+
+  function resetSorter() {
+    pool = [...members[currentCategory]];
+    ranking = {};
+    totalBattles = 0;
+    resultArea.style.display = "none";
+    drawButton.style.display = "block";
+    leftMemberEl.style.display = "flex";
+    rightMemberEl.style.display = "flex";
+    for (const name of pool) {
+      ranking[name] = 0;
+    }
+    showNextBattle();
+  }
+
+  function showNextBattle() {
+    if (pool.length < 2) {
+      showResults();
+      return;
+    }
+    totalBattles++;
+    // Random pick two different members
+let leftIndex = Math.floor(Math.random() * pool.length);
+    let rightIndex;
+    do {
+      rightIndex = Math.floor(Math.random() * pool.length);
+    } while (rightIndex === leftIndex);
+
+    const leftMember = pool[leftIndex];
+    const rightMember = pool[rightIndex];
+
+    leftNameEl.textContent = leftMember;
+    rightNameEl.textContent = rightMember;
+
+    leftImgEl.src = `RT_leftMember.jpeg`;
+    rightImgEl.src = `RT_{rightMember}.jpeg`;
+
+    // Store current choices
+    leftMemberEl.dataset.name = leftMember;
+    rightMemberEl.dataset.name = rightMember;
+  }
+
+  function chooseWinner(winnerName, loserName) {
+    ranking[winnerName]++;
+    // Optional: remove loser from pool or keep them for multiple battles
+    // Here we keep all to allow full ranking accumulation
+    showNextBattle();
+  }
+
+  function chooseDraw() {
+    // No changes in ranking, just proceed
+    showNextBattle();
+  }
+
+  function showResults() {
+    // Sort by ranking desc
+    let sorted = Object.entries(ranking)
+      .sort((a,b) => b[1] - a[1]);
+
+    resultList.innerHTML = "";
+    sorted.forEach(([name, score]) => {
+      let li = document.createElement("li");
+      li.textContent = `name -{score} vote(s)`;
+      resultList.appendChild(li);
+    });
+
+    drawButton.style.display = "none";
+leftMemberEl.style.display = "none";
+    rightMemberEl.style.display = "none";
+    resultArea.style.display = "block";
+  }
+
+  // Event Listeners
+  leftMemberEl.addEventListener("click", () => {
+    chooseWinner(leftMemberEl.dataset.name, rightMemberEl.dataset.name);
+  });
+  rightMemberEl.addEventListener("click", () => {
+    chooseWinner(rightMemberEl.dataset.name, leftMemberEl.dataset.name);
+  });
+  drawButton.addEventListener("click", () => {
+    chooseDraw();
+  });
+
+  restartButton.addEventListener("click", () => {
+    resetSorter();
+  });
+
+  categoryButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      categoryButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentCategory = btn.dataset.cat;
+      resetSorter();
+    });
+  });
+
+  // Initialize
+  resetSorter();
+</script>
+
+</body>
+</html>
