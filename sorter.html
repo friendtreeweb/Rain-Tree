@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-key="pageTitle">Rain Tree Idola Sorter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="back-home-button">
+            <button onclick="location.href='index.html'">← Kembali ke Menu Utama</button>
+        </div>
+
+        <div class="language-selector">
+            <button class="lang-button active" data-lang="id">ID</button>
+            <button class="lang-button" data-lang="en">EN</button>
+            <button class="lang-button" data-lang="jp">JP</button>
+        </div>
+
+        <h1 data-key="mainTitle">Rain Tree Idola Sorter</h1>
+
+        <div id="category-selection" class="sorter-section">
+            <h2 data-key="chooseCategory">Pilih Kategori Sorter:</h2>
+            <div class="category-buttons">
+                <button data-category="general" data-key="categoryGeneral">Umum</button>
+                <button data-category="visual" data-key="categoryVisual">Visual</button>
+                <button data-category="talent" data-key="categoryTalent">Bakat</button>
+                <button data-category="comedian" data-key="categoryComedian">Pelawak</button>
+            </div>
+        </div>
+
+        <div id="sorter-section" class="sorter-section hidden">
+            <p id="progress-text" class="progress-text" data-key="progressText">Proses: 0/0</p>
+            <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <div class="idol-comparison">
+                <div class="idol-card" id="idol-1">
+                    <img src="images/placeholder.png" alt="Idol 1">
+                    <p class="idol-name">Tap to choose</p>
+                </div>
+                <p class="vs-text" data-key="vsText">VS</p>
+                <div class="idol-card" id="idol-2">
+                    <img src="images/placeholder.png" alt="Idol 2">
+                    <p class="idol-name">Tap to choose</p>
+                </div>
+            </div>
+            <button id="draw-button" class="draw-button" data-key="drawButton">Seri (Draw)</button>
+        </div>
+
+        <div id="results-section" class="sorter-section hidden">
+            <h2 id="results-title">Hasil Sorter Anda</h2>
+            <div id="results-list" class="results-list">
+                </div>
+            <div class="sorter-actions">
+                <button id="download-results" data-key="downloadResults">Unduh Hasil (Gambar)</button>
+                <button id="share-results" data-key="shareResults">Bagikan</button>
+                <button id="restart-sorter" data-key="restartButton">Mulai Ulang</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html> 
