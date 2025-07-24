@@ -1,268 +1,31 @@
-```html
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="id">
 <head>
-<meta charset="UTF-8" />
-<title>Rain Tree Sorter Advanced</title>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<style>
-  body {
-    background-color: #b2dfdb;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #004d40;
-    text-align: center;
-    margin: 0; padding: 20px;
-  }
-  h1 {
-    margin-bottom: 0.3em;
-  }
-  #battle-area {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    margin-top: 30px;
-    user-select: none;
-  }
-  .member {
-    width: 220px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-  }
-  .member:hover {
-    transform: scale(1.05);
-  }
-  .member img {
-    width: 220px;
-    height: 220px;
-    object-fit: cover;
-    border-radius: 12px;
-    border: 4px solid #00796b;
-  }
-  .member-name {
-    margin-top: 10px;
-    font-weight: 700;
-    font-size: 1.2em;
-  }
-  #buttons {
-margin-top: 25px;
-  }
-  button {
-    background-color: #00796b;
-    border: none;
-    color: white;
-    font-weight: bold;
-    padding: 12px 24px;
-    margin: 0 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.3s ease;
-  }
-  button:hover {
-    background-color: #004d40;
-  }
-  #result-area {
-    margin-top: 40px;
-    display: none;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-    background: white;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.2);
-  }
-  #ranking-list {
-    text-align: left;
-    font-size: 1.1em;
-    padding-left: 1.2em;
-    color: #004d40;
-  }
-  #download-btn {
-    margin-top: 20px;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-key="mainTitle">Rain Tree Fan Tools</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="container">
+        <div class="language-selector">
+            <button class="lang-button active" data-lang="id">ID</button>
+            <button class="lang-button" data-lang="en">EN</button>
+            <button class="lang-button" data-lang="jp">JP</button>
+        </div>
 
-<h1>Rain Tree Sorter</h1>
-<p>Pilih anggota yang kamu suka, atau pilih Draw jika sama-sama bagus!</p>
+        <h1 data-key="mainTitle">Rain Tree Fan Tools</h1>
 
-<div id="battle-area">
-  <div class="member" id="left-member">
-    <img src="<!-- IMAGE HERE -->" alt="Left Member" id="left-img" />
-    <div class="member-name" id="left-name"></div>
-  </div>
-  <div class="member" id="right-member">
-    <img src="<!-- IMAGE HERE -->" alt="Right Member" id="right-img" />
-    <div class="member-name" id="right-name"></div>
-  </div>
-</div>
+        <div class="menu-section">
+            <h2 data-key="chooseTool">Pilih Alat:</h2>
+            <div class="menu-buttons">
+                <button onclick="location.href='sorter.html'" data-key="mainMenuSorter">Idol Sorter</button>
+                <button onclick="location.href='senbatsu.html'" data-key="mainMenuSenbatsu">Senbatsu Formation</button>
+                <button onclick="location.href='matchmaker.html'" data-key="mainMenuMatchmaker">Ramalan Cinta RT</button>
+            </div>
+        </div>
+    </div>
 
-<div id="buttons">
-<button onclick="choose('left')">Pilih Kiri</button>
-  <button onclick="choose('draw')">Draw</button>
-  <button onclick="choose('right')">Pilih Kanan</button>
-</div>
-
-<div id="result-area">
-  <h2>Hasil Ranking</h2>
-  <ol id="ranking-list"></ol>
-  <button id="download-btn">Download Hasil Ranking (Gambar)</button>
-</div>
-
-<script>
-  // Data anggota
-  const members = [
-    "Ayase Kotori", "Endo Rino", "Yoshikawa Umi", "Mizuno Noa",
-    "Ichihara Tsumugi", "Sato Rica", "Katase Manaka", "Hayama Rico",
-    "Nino Fuka", "Momose Suzuna", "Suzuno Mio", "Nakamata Miki",
-    "Hashimoto Maki", "Kurosawa Karen", "Kato Shu",
-    "Nagase Mari", "Asamiya Hinata"
-  ];
-
-  // Untuk merge sort: buat queue perbandingan
-  let mergeQueue = [];
-
-  // Helper: path gambar, edit sesuai folder kamu
-  function getImgPath(name) {
-    return `images/${name}.jpg`;
-  }
-
-  // State merge sort
-  let sortedList = null;
-  let comparisons = [];
-  let leftIndex = 0, rightIndex = 0;
-  let leftArray = [], rightArray = [];
-
-  // Fungsi merge sort teradaptasi untuk interaktif
-  function startSort(arr) {
-    if (arr.length <= 1) {
-      return arr;
-    }
-    let mid = Math.floor(arr.length / 2);
-    leftArray = startSort(arr.slice(0, mid));
-    rightArray = startSort(arr.slice(mid));
-    comparisons = [];
-leftIndex = 0; rightIndex = 0;
-    sortedList = [];
-    return null; // mulai interaktif
-  }
-
-  let currentLeft, currentRight;
-
-  // Mulai sorting
-  let currentArray = [...members];
-  currentArray = currentArray.map(n => ({name:n}));
-
-  // Convert ke object untuk tambahan nilai (optional)
-
-  // Interaktif merge next
-  function nextComparison() {
-    if (leftIndex >= leftArray.length && rightIndex >= rightArray.length) {
-      // Gabungkan semua sisa
-      sortedList = sortedList.concat(leftArray.slice(leftIndex)).concat(rightArray.slice(rightIndex));
-      return true;
-    }
-    if (leftIndex >= leftArray.length) {
-      sortedList.push(rightArray[rightIndex++]);
-      return false;
-    }
-    if (rightIndex >= rightArray.length) {
-      sortedList.push(leftArray[leftIndex++]);
-      return false;
-    }
-    currentLeft = leftArray[leftIndex];
-    currentRight = rightArray[rightIndex];
-    return false; // masih ada pilihan
-  }
-
-  // Implementasi penuh merge sort interaktif terlalu rumit di sini,
-  // jadi kita gunakan metode sederhana: presentasi 2 anggota, pilih, terus susun list secara merge
-  // Tapi supaya cocok request, kita buat cara yang lebih simpel:
-  // Kita buat antrian dan bandingkan pasangan sampai habis, lalu tampilkan hasil
-// Cara simpel: pakai queue untuk matchup berulang:
-  let queue = [...members];
-  let rankResult = [];
-  let currentPair = [];
-
-  // Fungsi shuffle
-  function shuffle(arr) {
-    for (let i = arr.length -1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i+1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-  }
-
-  shuffle(queue);
-
-  function nextPair() {
-    if (queue.length === 1) {
-      rankResult = [...queue];
-      showResults();
-      return;
-    }
-    if (queue.length === 0) {
-      rankResult = [];
-      showResults();
-      return;
-    }
-    currentPair = [queue.shift(), queue.shift()];
-    setPair(currentPair[0], currentPair[1]);
-  }
-
-  function setPair(leftName, rightName) {
-    document.getElementById("left-name").textContent = leftName;
-    document.getElementById("right-name").textContent = rightName;
-    document.getElementById("left-img").src = getImgPath(leftName);
-    document.getElementById("right-img").src = getImgPath(rightName);
-  }
-
-  function choose(side) {
-    if (side === 'left') {
-      queue.push(currentPair[0]);
-      queue.push(currentPair[1]);
-    } else if (side === 'right') {
-      queue.push(currentPair[1]);
-      queue.push(currentPair[0]);
-    } else {
-      // Draw: kedua-duanya dianggap sama, dimasukkan berurutan
-queue.push(currentPair[0]);
-      queue.push(currentPair[1]);
-    }
-    nextPair();
-  }
-
-  function showResults() {
-    document.getElementById("battle-area").style.display = "none";
-    document.getElementById("buttons").style.display = "none";
-    const resultArea = document.getElementById("result-area");
-    const ol = document.getElementById("ranking-list");
-    ol.innerHTML = "";
-    rankResult.forEach((name, i) => {
-      let li = document.createElement("li");
-      li.textContent = name;
-      ol.appendChild(li);
-    });
-    resultArea.style.display = "block";
-  }
-
-  document.getElementById("download-btn").addEventListener("click", () => {
-    html2canvas(document.getElementById("result-area")).then(canvas => {
-      const link = document.createElement("a");
-      link.download = "rain_tree_ranking.png";
-      link.href = canvas.toDataURL();
-      link.click();
-    });
-  });
-
-  // Mulai dari pasangan pertama
-  nextPair();
-
-</script>
-
+    <script src="script.js"></script>
 </body>
 </html>
-```
-
----
