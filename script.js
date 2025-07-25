@@ -1,4 +1,4 @@
- document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     // Definisi anggota (nama asli/Romaji - ini adalah kunci untuk terjemahan)
     const members = [
         { name: 'Ayase Kotori', image: 'RT_AyaseKotori.jpeg' },
@@ -227,6 +227,24 @@
 
     let currentLang = 'id'; // Bahasa default saat ini
 
+    // --- Helper function for visible debug messages ---
+    function addDebugMessage(msg) {
+        const debugList = document.getElementById('debug-list');
+        const debugDiv = document.getElementById('debug-messages');
+        if (debugList && debugDiv) {
+            debugDiv.style.display = 'block'; // Ensure it's visible
+            const listItem = document.createElement('li');
+            listItem.textContent = msg;
+            debugList.appendChild(listItem);
+            // Keep only the last few messages to prevent overflow
+            if (debugList.children.length > 10) {
+                debugList.removeChild(debugList.children[0]);
+            }
+            debugList.scrollTop = debugList.scrollHeight; // Auto-scroll to bottom
+        }
+    }
+
+
     // --- DOM Elements Umum (yang ada di kedua halaman) ---
     const pageTitleElement = document.querySelector('title');
     const langButtons = document.querySelectorAll('.language-selector .lang-button');
@@ -254,7 +272,7 @@
 
     // --- Translation Function ---
     function setLanguage(lang) {
-        console.log(`Setting language to: ${lang}`);
+        addDebugMessage(`Setting language to: ${lang}`);
         currentLang = lang;
         langButtons.forEach(button => button.classList.remove('active'));
         document.querySelector(`.lang-button[data-lang="${lang}"]`)?.classList.add('active'); // Gunakan optional chaining
@@ -280,6 +298,7 @@
 
         // Logika spesifik untuk halaman sorter (jika elemen-elemennya ada di DOM)
         if (window.location.pathname.includes('sorter.html')) {
+            addDebugMessage("Language set for sorter.");
             const sorterSection = document.getElementById('sorter-section');
             const idol1Card = document.getElementById('idol-1');
             const idol2Card = document.getElementById('idol-2');
@@ -347,7 +366,7 @@
 
     // --- Logic for Sorter Page (`sorter.html`) ---
     if (window.location.pathname.includes('sorter.html')) {
-        console.log("Loading Sorter Page script...");
+        addDebugMessage("Sorter script loaded.");
         let currentList = [];
         let comparisonsMade = 0;
         let totalComparisons = 0;
@@ -375,13 +394,16 @@
 
         // Added more robust checks for initial elements
         if (!categorySelectionSection || !sorterSection || !resultsSection || categoryButtons.length === 0 || !idol1Card || !idol2Card || !idol1Img || !idol1Name || !idol2Img || !idol2Name || !drawButton || !resultsTitle || !resultsList || !downloadResultsButton || !shareResultsButton || !restartSorterButton) {
-            console.error("ERROR: One or more critical Sorter DOM elements not found. Sorter script might not function correctly.");
+            addDebugMessage("ERROR: One or more critical Sorter DOM elements NOT FOUND.");
             // Optionally, disable buttons or show a message to the user if elements are missing
             // return; // Don't return, let's try to proceed with what's available for debugging
+        } else {
+            addDebugMessage("All Sorter DOM elements found.");
         }
 
+
         function initializeSorter(category) {
-            console.log(`Initializing Sorter for category: ${category}`);
+            addDebugMessage(`Initializing Sorter for category: ${category}`);
             currentCategory = category;
             currentList = members.map(member => ({ ...member, wins: 0, losses: 0, draws: 0 }));
             shuffleArray(currentList);
@@ -391,7 +413,8 @@
 
             if(categorySelectionSection) categorySelectionSection.classList.add('hidden');
             if(sorterSection) sorterSection.classList.remove('hidden');
-            console.log("Category selection hidden, sorter section shown.");
+            addDebugMessage("Category selection hidden, sorter section shown.");
+            addDebugMessage(`Current list size: ${currentList.length}, Total comparisons: ${totalComparisons}`);
 
             startNextComparison();
         }
@@ -408,6 +431,7 @@
         }
 
         function getRandomUniquePair() {
+            addDebugMessage("Attempting to get a unique pair.");
             const availablePairs = [];
             for (let i = 0; i < currentList.length; i++) {
                 for (let j = i + 1; j < currentList.length; j++) {
@@ -422,15 +446,17 @@
                 const randomIndex = Math.floor(Math.random() * availablePairs.length);
                 const pair = availablePairs[randomIndex];
                 comparedPairs.add(`${pair[0].name}-${pair[1].name}`);
+                addDebugMessage(`Found pair: ${pair[0].name} vs ${pair[1].name}.`);
                 return pair;
             }
+            addDebugMessage("No unique pair found. All pairs compared or list too small.");
             return [null, null];
         }
 
         function displayBattle(idol1, idol2) {
             // Defensive checks to ensure elements exist before manipulating them
             if (!idol1Card || !idol2Card || !idol1Img || !idol1Name || !idol2Img || !idol2Name) {
-                console.error("Display Battle: One or more idol elements are null, cannot display battle.");
+                addDebugMessage("ERROR: displayBattle: One or more idol elements are NULL, cannot display battle.");
                 return;
             }
             idol1Card.dataset.name = idol1.name;
@@ -440,14 +466,30 @@
             idol2Card.dataset.name = idol2.name;
             idol2Img.src = `images/${idol2.image}`;
             idol2Name.textContent = translations[currentLang][idol2.name] || idol2.name;
-            console.log(`Displaying battle: ${idol1.name} VS ${idol2.name}`);
+            addDebugMessage(`Displaying battle: ${idol1.name} VS ${idol2.name}`);
+        }
+
+        function startNextComparison() {
+            addDebugMessage("Starting next comparison.");
+            if (comparisonsMade >= totalComparisons) {
+                finishSorting();
+                return;
+            }
+            const [idol1, idol2] = getRandomUniquePair();
+            if (idol1 && idol2) {
+                displayBattle(idol1, idol2);
+            } else {
+                addDebugMessage("No valid pair from getRandomUniquePair. Finishing sorting.");
+                finishSorting(); // This means no unique pair could be found (e.g., list is too small or all compared)
+            }
         }
 
         function handleChoice(winnerName) {
+            addDebugMessage(`Choice made: ${winnerName}`);
             const idol1 = currentList.find(m => m.name === idol1Card?.dataset.name);
             const idol2 = currentList.find(m => m.name === idol2Card?.dataset.name);
             if (!idol1 || !idol2) {
-                console.error('Idol not found for comparison in handleChoice. Skipping...');
+                addDebugMessage('ERROR: Idol not found for comparison in handleChoice. Skipping...');
                 return;
             }
             comparisonsMade++;
@@ -468,7 +510,7 @@
         function finishSorting() {
             if (sorterSection) sorterSection.classList.add('hidden');
             if (resultsSection) resultsSection.classList.remove('hidden');
-            console.log("Sorting finished, showing results.");
+            addDebugMessage("Sorting finished, showing results.");
 
             currentList.sort((a, b) => {
                 if (b.wins !== a.wins) return b.wins - a.wins;
@@ -480,7 +522,7 @@
 
         function updateResultsDisplay() {
             if (!resultsTitle || !resultsList) {
-                console.error("Results display elements not found, cannot update results.");
+                addDebugMessage("ERROR: Results display elements not found, cannot update results.");
                 return;
             }
             let titleKey = '';
@@ -504,19 +546,30 @@
                 `;
                 resultsList.appendChild(resultItem);
             });
-            console.log("Sorter results display updated.");
+            addDebugMessage("Sorter results display updated.");
         }
 
         // --- Sorter Event Listeners ---
         categoryButtons.forEach(button => {
             button.addEventListener('click', (e) => {
+                addDebugMessage(`Category button clicked: ${e.target.dataset.category}`);
                 initializeSorter(e.target.dataset.category);
             });
         });
-        idol1Card?.addEventListener('click', () => handleChoice(idol1Card.dataset.name));
-        idol2Card?.addEventListener('click', () => handleChoice(idol2Card.dataset.name));
-        drawButton?.addEventListener('click', () => handleChoice('draw'));
+        idol1Card?.addEventListener('click', () => {
+            addDebugMessage(`Idol 1 card clicked (${idol1Card.dataset.name}).`);
+            handleChoice(idol1Card.dataset.name)
+        });
+        idol2Card?.addEventListener('click', () => {
+            addDebugMessage(`Idol 2 card clicked (${idol2Card.dataset.name}).`);
+            handleChoice(idol2Card.dataset.name)
+        });
+        drawButton?.addEventListener('click', () => {
+            addDebugMessage("Draw button clicked.");
+            handleChoice('draw')
+        });
         downloadResultsButton?.addEventListener('click', () => {
+            addDebugMessage("Download results button clicked.");
             if (resultsSection) {
                 html2canvas(resultsSection, {
                     useCORS: true,
@@ -527,12 +580,16 @@
                     link.download = `rain_tree_sorter_results_${currentLang}.png`;
                     link.href = canvas.toDataURL('image/png');
                     link.click();
+                    addDebugMessage("Results image downloaded.");
+                }).catch(error => {
+                    addDebugMessage(`ERROR: HTML2Canvas download failed: ${error.message}`);
                 });
             } else {
-                console.error("Results section not found for download.");
+                addDebugMessage("ERROR: Results section not found for download.");
             }
         });
         shareResultsButton?.addEventListener('click', () => {
+            addDebugMessage("Share results button clicked.");
             if (navigator.share && resultsSection) {
                 html2canvas(resultsSection, {
                     useCORS: true,
@@ -552,28 +609,31 @@
                             title: translations[currentLang]['pageTitle'],
                             text: shareText,
                             url: window.location.href,
-                        }).then(() => console.log('Share successful'))
-                        .catch((error) => console.log('Sharing failed', error));
+                        }).then(() => addDebugMessage('Share successful'))
+                        .catch((error) => addDebugMessage(`ERROR: Sharing failed: ${error.message}`));
                     }, 'image/png');
+                }).catch(error => {
+                    addDebugMessage(`ERROR: HTML2Canvas share failed: ${error.message}`);
                 });
             } else {
                 alert('Fitur berbagi tidak didukung di browser ini. Anda bisa mengunduh gambar dan membagikannya secara manual.');
-                console.error("Share feature not supported or results section not found.");
+                addDebugMessage("Share feature not supported or results section not found.");
             }
         });
         restartSorterButton?.addEventListener('click', () => {
+            addDebugMessage("Restart sorter button clicked.");
             if (categorySelectionSection) categorySelectionSection.classList.remove('hidden');
             if (sorterSection) sorterSection.classList.add('hidden');
             if (resultsSection) resultsSection.classList.add('hidden');
             if (resultsList) resultsList.innerHTML = '';
             comparedPairs.clear();
             updateProgressBar();
-            console.log("Sorter restarted.");
+            addDebugMessage("Sorter restarted.");
         });
 
         // Initial setup for the sorter page
         setLanguage('id'); // Ensures language is set even if not changed by user
-        console.log("Sorter page script fully executed.");
+        addDebugMessage("Sorter page script fully executed.");
     }
 
     // --- Logic for Senbatsu Page (`senbatsu.html`) ---
@@ -937,6 +997,8 @@
                     link.href = canvas.toDataURL('image/png');
                     link.click();
                     cardToCapture.remove(); // Remove the clone after capture
+                }).catch(error => {
+                    console.error("HTML2Canvas download failed:", error);
                 });
             } else {
                 console.error("Match result card not found for download.");
