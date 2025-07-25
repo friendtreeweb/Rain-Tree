@@ -250,6 +250,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         // Repopulate senbatsu size dropdown
         populateSenbatsuSizeSelect(); // To update 'Anggota' text if lang changes
+        // Re-render current slots to ensure translated names
+        if (senbatsuSlotsContainer.children.length > 0) {
+            const currentNumSlots = Array.from(senbatsuSlotsContainer.querySelectorAll('.senbatsu-slot')).length;
+            generateSenbatsuSlots(currentNumSlots, true); // Pass true to only re-render, not clear assignments
+        }
     }
 
     // Fungsi Debugging (dapat dinonaktifkan dengan menghapus div #debug-messages dari HTML)
@@ -262,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
             listItem.textContent = msg;
             debugList.appendChild(listItem);
             // Keep only the last few messages to prevent overflow
-            if (debugList.children.length > 10) {
+            if (debugList.children.length > 15) { // Increased to keep more history
                 debugList.removeChild(debugList.children[0]);
             }
             debugList.scrollTop = debugList.scrollHeight; // Auto-scroll to bottom
@@ -685,7 +690,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const senbatsuSlotsContainer = document.getElementById('senbatsu-slots-container'); // New container for slots
         const senbatsuResultTitle = document.getElementById('senbatsu-result-title');
         const downloadSenbatsuButton = document.getElementById('download-senbatsu');
-        const senbatsuResultCard = document.getElementById('senbatsu-result-card'); // Ensure this ID exists in HTML
+        // The senbatsuResultCard was not defined in HTML, target senbatsuFormationDiv for capture
+        const senbatsuFormationToCapture = document.getElementById('senbatsu-formation'); 
 
         let assignedSenbatsuMembers = new Map(); // Map: slotIndex -> memberObject
 
@@ -713,15 +719,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function getSenbatsuLayout(num) {
             // Define specific layouts for common senbatsu sizes to ensure "inverted pyramid" look
-            // Each array element represents a row size
+            // Each array element represents a row size, from back (bottom) to front (top)
             switch (num) {
                 case 1: return [1];
                 case 2: return [2];
-                case 3: return [2, 1];
+                case 3: return [2, 1]; // 2 (back), 1 (front)
                 case 4: return [2, 2];
                 case 5: return [3, 2];
                 case 6: return [3, 3];
-                case 7: return [4, 3]; // Common inverted pyramid
+                case 7: return [4, 3]; // 4 (back), 3 (front)
                 case 8: return [4, 4];
                 case 9: return [5, 4];
                 case 10: return [5, 5];
@@ -730,28 +736,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 13: return [7, 6];
                 case 14: return [7, 7];
                 case 15: return [8, 7];
-                case 16: return [7, 6, 3]; // Classic 16-member senbatsu with front/middle/back
+                case 16: return [7, 6, 3]; // Classic 16-member senbatsu: 7 (back), 6 (middle), 3 (front)
                 case 17: return [9, 8];
                 default:
-                    // Fallback for other numbers: try to create roughly equal rows
-                    let layout = [];
-                    let remaining = num;
-                    let numRows = Math.ceil(Math.sqrt(num)); // Estimate number of rows
-                    if (numRows === 0) numRows = 1;
+                    // Fallback for other numbers: try to create rows for a pyramid effect
+                    let calculatedLayout = [];
+                    let tempNum = num;
+                    // Estimate number of rows, usually around sqrt(num) or num/average_row_size
+                    let numRowsEstimate = Math.max(2, Math.ceil(Math.sqrt(num * 0.75))); // Adjust for more rows
+                    let baseRowCapacity = Math.ceil(num / numRowsEstimate);
 
-                    for (let i = 0; i < numRows && remaining > 0; i++) {
-                        let rowSize = Math.ceil(remaining / (numRows - i));
-                        layout.push(currentRowSize);
-                        remaining -= currentRowSize;
-                        if (baseRowSize > 1) baseRowSize--; // Decrease row size for next row
+                    while (tempNum > 0) {
+                        let currentRowSize = Math.min(baseRowCapacity, tempNum);
+                        calculatedLayout.unshift(currentRowSize); // Add to the front to reverse order (smallest first visually)
+                        tempNum -= currentRowSize;
+                        baseRowCapacity = Math.max(1, baseRowCapacity - 1); // Decrease size for "smaller" rows (visual top)
                     }
-                    return layout;
+                    // Reverse the array to get from back (largest) to front (smallest) for flex-direction: column
+                    return calculatedLayout.reverse(); // This makes sure the largest rows are at the 'bottom' of the column
             }
         }
 
-        function generateSenbatsuSlots(numSlots) {
-            senbatsuSlotsContainer.innerHTML = ''; // Clear existing slots
-            assignedSenbatsuMembers.clear(); // Reset assigned members
+        function generateSenbatsuSlots(numSlots, isReRender = false) {
+            if (!isReRender) { // Only clear and reset assignments on initial generation
+                senbatsuSlotsContainer.innerHTML = '';
+                assignedSenbatsuMembers.clear();
+            }
 
             const layout = getSenbatsuLayout(numSlots);
             let slotIndex = 0;
@@ -762,50 +772,74 @@ document.addEventListener('DOMContentLoaded', () => {
                 rowDiv.classList.add(`senbatsu-row-${rowIndex + 1}`); // For specific row styling
 
                 for (let i = 0; i < rowSize; i++) {
-                    const slotDiv = document.createElement('div');
-                    slotDiv.classList.add('senbatsu-slot');
-                    slotDiv.dataset.slotIndex = slotIndex;
-                    slotDiv.innerHTML = `<p data-key="selectMemberHint">Pilih Anggota</p>`; // Initial hint
-                    slotDiv.querySelector('p').textContent = translations[currentLang].selectMemberHint;
+                    // Re-use existing slot if re-rendering, otherwise create new
+                    let slotDiv;
+                    if (isReRender && senbatsuSlotsContainer.children[rowIndex] && senbatsuSlotsContainer.children[rowIndex].children[i]) {
+                        slotDiv = senbatsuSlotsContainer.children[rowIndex].children[i];
+                        slotDiv.innerHTML = ''; // Clear existing content to redraw
+                    } else {
+                        slotDiv = document.createElement('div');
+                        slotDiv.classList.add('senbatsu-slot');
+                        rowDiv.appendChild(slotDiv); // Append to rowDiv if new
+                    }
 
-                    slotDiv.addEventListener('click', () => handleSlotClick(slotDiv, slotIndex));
-                    rowDiv.appendChild(slotDiv);
+                    slotDiv.dataset.slotIndex = slotIndex;
+                    const currentAssigned = assignedSenbatsuMembers.get(slotIndex);
+
+                    if (currentAssigned && !isReRender) { // If it's a new generation and already assigned (shouldn't happen)
+                         displayMemberInSlot(slotDiv, currentAssigned);
+                    } else if (isReRender && currentAssigned) { // Re-render existing assigned members
+                        displayMemberInSlot(slotDiv, currentAssigned);
+                    }
+                    else {
+                        slotDiv.innerHTML = `<p data-key="selectMemberHint">${translations[currentLang].selectMemberHint}</p>`;
+                    }
+
+                    // Re-attach listener if new, or ensure it's there if re-rendering (prevents duplicates)
+                    // Remove old listener first if re-rendering to prevent multiple attachments
+                    const oldClickListener = slotDiv._clickListener; // Store listener reference
+                    if (oldClickListener) {
+                        slotDiv.removeEventListener('click', oldClickListener);
+                    }
+                    const newClickListener = () => handleSlotClick(slotDiv, slotIndex);
+                    slotDiv.addEventListener('click', newClickListener);
+                    slotDiv._clickListener = newClickListener; // Store new listener reference
+
                     slotIndex++;
                 }
-                senbatsuSlotsContainer.appendChild(rowDiv);
+                if (!isReRender || !senbatsuSlotsContainer.children[rowIndex]) { // Only append if new row
+                    senbatsuSlotsContainer.appendChild(rowDiv);
+                }
             });
             addDebugMessage(`Generated ${numSlots} senbatsu slots with layout: ${JSON.stringify(layout)}`);
         }
 
+
         function handleSlotClick(slotDiv, slotIndex) {
-            addDebugMessage(`Slot ${slotIndex} clicked.`);
-            // If there's already a member selection dropdown open for this slot, close it
+            addDebugMessage(`Slot ${slotIndex} clicked. Current innerHTML (first 50 chars): ${slotDiv.innerHTML.substring(0, 50)}...`);
+
             const existingSelect = slotDiv.querySelector('select');
             if (existingSelect) {
+                addDebugMessage(`Existing select found in slot ${slotIndex}. Removing it.`);
                 existingSelect.remove();
-                // If a member was previously assigned, redisplay them
                 const currentAssigned = assignedSenbatsuMembers.get(slotIndex);
                 if (currentAssigned) {
                     displayMemberInSlot(slotDiv, currentAssigned);
                 } else {
-                    slotDiv.innerHTML = `<p data-key="selectMemberHint">Pilih Anggota</p>`;
-                    slotDiv.querySelector('p').textContent = translations[currentLang].selectMemberHint;
+                    slotDiv.innerHTML = `<p data-key="selectMemberHint">${translations[currentLang].selectMemberHint}</p>`;
                 }
-                return; // Clicked on an open dropdown, just close it or revert to member display.
+                return;
             }
 
             // Create a new select element for member selection
             const memberSelect = document.createElement('select');
             memberSelect.classList.add('member-select-dropdown');
-            memberSelect.innerHTML = '<option value="">Pilih...</option>'; // Default option
+            memberSelect.innerHTML = `<option value="">${translations[currentLang].selectMemberHint}</option>`; // Use translation for "Pilih..."
 
-            // Add all available members to the dropdown
-            members.forEach(member => { // Iterate through all members
-                // Check if member is already assigned to *any other* slot
-                const isAssignedToOtherSlot = Array.from(assignedSenbatsuMembers.entries()).some(([idx, assignedMember]) => 
+            members.forEach(member => {
+                const isAssignedToOtherSlot = Array.from(assignedSenbatsuMembers.entries()).some(([idx, assignedMember]) =>
                     idx !== slotIndex && assignedMember.name === member.name
                 );
-
                 if (!isAssignedToOtherSlot) {
                     const option = document.createElement('option');
                     option.value = member.name;
@@ -814,56 +848,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Set current selected member if already assigned to this slot
             const currentAssignedMember = assignedSenbatsuMembers.get(slotIndex);
             if (currentAssignedMember) {
                 memberSelect.value = currentAssignedMember.name;
             }
 
-            // Append dropdown to slot
-            slotDiv.innerHTML = ''; // Clear current content
+            slotDiv.innerHTML = ''; // Clear existing content (image/p)
             slotDiv.appendChild(memberSelect);
-            memberSelect.focus(); // Auto-focus the dropdown
+            memberSelect.focus();
+            addDebugMessage(`Select dropdown appended to slot ${slotIndex}.`);
 
-            // Handle member selection
             memberSelect.addEventListener('change', (event) => {
                 const selectedMemberName = event.target.value;
                 if (selectedMemberName) {
                     const selectedMember = members.find(m => m.name === selectedMemberName);
                     if (selectedMember) {
-                        assignedSenbatsuMembers.set(slotIndex, selectedMember); // Assign member to slot
-                        displayMemberInSlot(slotDiv, selectedMember); // Update slot UI
-                        addDebugMessage(`Assigned ${selectedMember.name} to slot ${slotIndex}`);
+                        assignedSenbatsuMembers.set(slotIndex, selectedMember);
+                        displayMemberInSlot(slotDiv, selectedMember);
+                        addDebugMessage(`Assigned ${selectedMember.name} to slot ${slotIndex} via change event.`);
                     }
                 } else {
-                    // Option "Pilih..." selected, unassign member from this slot
-                    const previouslyAssigned = assignedSenbatsuMembers.get(slotIndex);
-                    if (previouslyAssigned) {
-                        assignedSenbatsuMembers.delete(slotIndex); // Remove assignment
-                        slotDiv.innerHTML = `<p data-key="selectMemberHint">Pilih Anggota</p>`; // Reset slot UI
-                        slotDiv.querySelector('p').textContent = translations[currentLang].selectMemberHint;
-                        addDebugMessage(`Unassigned member from slot ${slotIndex}`);
-                    }
+                    assignedSenbatsuMembers.delete(slotIndex);
+                    slotDiv.innerHTML = `<p data-key="selectMemberHint">${translations[currentLang].selectMemberHint}</p>`;
+                    addDebugMessage(`Unassigned member from slot ${slotIndex} via change event.`);
                 }
             });
 
-            // If dropdown loses focus without selection, revert
             memberSelect.addEventListener('blur', () => {
-                setTimeout(() => { // Small delay to allow change event to fire first
-                    if (!slotDiv.querySelector('select')) { // Only if dropdown hasn't been replaced by member
+                // Small delay to allow change event to fire before blur handles the display
+                setTimeout(() => {
+                    // Check if the select is still the child, meaning no change event replaced it
+                    if (slotDiv.contains(memberSelect)) { // Use .contains() for more robust check
                         const currentAssigned = assignedSenbatsuMembers.get(slotIndex);
                         if (currentAssigned) {
                             displayMemberInSlot(slotDiv, currentAssigned);
                         } else {
-                            slotDiv.innerHTML = `<p data-key="selectMemberHint">Pilih Anggota</p>`;
-                            slotDiv.querySelector('p').textContent = translations[currentLang].selectMemberHint;
+                            slotDiv.innerHTML = `<p data-key="selectMemberHint">${translations[currentLang].selectMemberHint}</p>`;
                         }
+                        addDebugMessage(`Blur event on slot ${slotIndex}. Reverted to member display or hint.`);
                     }
                 }, 100);
             });
         }
 
         function displayMemberInSlot(slotDiv, member) {
+            addDebugMessage(`Displaying member ${member.name} in slot ${slotDiv.dataset.slotIndex}`);
             slotDiv.innerHTML = `
                 <img src="images/${member.image}" alt="${member.name}">
                 <p>${translations[currentLang][member.name] || member.name}</p>
@@ -875,13 +904,12 @@ document.addEventListener('DOMContentLoaded', () => {
             removeButton.onclick = (e) => {
                 e.stopPropagation(); // Prevent handleSlotClick from firing on slot itself
                 const slotIndex = parseInt(slotDiv.dataset.slotIndex);
+                addDebugMessage(`Removing member from slot ${slotIndex}: ${assignedSenbatsuMembers.get(slotIndex)?.name}`);
                 assignedSenbatsuMembers.delete(slotIndex);
-                slotDiv.innerHTML = `<p data-key="selectMemberHint">Pilih Anggota</p>`;
-                slotDiv.querySelector('p').textContent = translations[currentLang].selectMemberHint;
+                slotDiv.innerHTML = `<p data-key="selectMemberHint">${translations[currentLang].selectMemberHint}</p>`;
                 // When a member is removed, the dropdowns in other slots need to be updated
-                // to reflect the newly available member.
-                // This is implicitly handled by `handleSlotClick` regenerating options,
-                // but for already open dropdowns or future clicks, it will be correct.
+                // to reflect the newly available member. This is implicitly handled
+                // when handleSlotClick is next called or generateSenbatsuSlots is rerun.
             };
             slotDiv.appendChild(removeButton);
         }
@@ -889,12 +917,15 @@ document.addEventListener('DOMContentLoaded', () => {
         senbatsuSizeSelect?.addEventListener('change', () => {
             const numSlots = parseInt(senbatsuSizeSelect.value);
             if (numSlots > 0) {
-                generateSenbatsuSlots(numSlots);
+                generateSenbatsuSlots(numSlots); // This will clear and re-generate slots
                 senbatsuFormationDiv.classList.remove('hidden');
                 senbatsuResultTitle.textContent = translations[currentLang].senbatsuResult;
+                addDebugMessage(`Senbatsu size changed to ${numSlots}. Slots generated.`);
             } else {
                 senbatsuFormationDiv.classList.add('hidden');
                 senbatsuSlotsContainer.innerHTML = '';
+                assignedSenbatsuMembers.clear();
+                addDebugMessage("Senbatsu size reset. Slots cleared.");
             }
         });
 
@@ -903,27 +934,29 @@ document.addEventListener('DOMContentLoaded', () => {
             if (numSlots > 0) {
                 if (assignedSenbatsuMembers.size !== numSlots) {
                     alert("Mohon isi semua slot senbatsu terlebih dahulu!");
+                    addDebugMessage("Attempted to generate senbatsu, but not all slots filled.");
                     return;
                 }
-                // This button now primarily functions as a confirmation/trigger for download/share
-                // if all slots are filled.
-                senbatsuFormationDiv.classList.remove('hidden'); // Ensure it's visible for capture
-                // No further generation needed here as it's done on dropdown change
+                senbatsuFormationDiv.classList.remove('hidden');
+                addDebugMessage("Generate Senbatsu button clicked. All slots filled, ready for capture.");
             } else {
                 alert("Mohon pilih jumlah anggota senbatsu terlebih dahulu!");
+                addDebugMessage("Generate Senbatsu button clicked, but no size selected.");
             }
         });
 
         downloadSenbatsuButton?.addEventListener('click', () => {
-            if (senbatsuResultCard) {
+            // Target the entire senbatsu-formation div for capture
+            if (senbatsuFormationToCapture) {
                 const numSlots = parseInt(senbatsuSizeSelect.value);
                 if (assignedSenbatsuMembers.size !== numSlots) {
                     alert("Mohon isi semua slot senbatsu terlebih dahulu sebelum mengunduh!");
+                    addDebugMessage("Download attempted, but not all slots filled.");
                     return;
                 }
 
-                addDebugMessage("Attempting to capture senbatsu result card.");
-                html2canvas(senbatsuResultCard, {
+                addDebugMessage("Attempting to capture senbatsu formation for download.");
+                html2canvas(senbatsuFormationToCapture, {
                     useCORS: true,
                     scale: 2,
                     backgroundColor: '#ffffff'
@@ -932,13 +965,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     link.download = `rain_tree_senbatsu_${currentLang}.png`;
                     link.href = canvas.toDataURL('image/png');
                     link.click();
-                    addDebugMessage("Senbatsu result card captured and downloaded.");
+                    addDebugMessage("Senbatsu formation captured and downloaded.");
                 }).catch(error => {
                     addDebugMessage(`ERROR: HTML2Canvas senbatsu download failed: ${error.message}`);
                     console.error("HTML2Canvas senbatsu download failed:", error);
                 });
             } else {
-                addDebugMessage("ERROR: Senbatsu result card not found for download.");
+                addDebugMessage("ERROR: Senbatsu formation element not found for download capture.");
             }
         });
 
