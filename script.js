@@ -228,20 +228,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentLang = 'id'; // Bahasa default saat ini
 
     // --- Helper function for visible debug messages ---
+    // MENGUBAH FUNGSI INI UNTUK MENYEMBUNYIKAN DEBUGGING
     function addDebugMessage(msg) {
-        const debugList = document.getElementById('debug-list');
-        const debugDiv = document.getElementById('debug-messages');
-        if (debugList && debugDiv) {
-            debugDiv.style.display = 'block'; // Ensure it's visible
-            const listItem = document.createElement('li');
-            listItem.textContent = msg;
-            debugList.appendChild(listItem);
-            // Keep only the last few messages to prevent overflow
-            if (debugList.children.length > 10) {
-                debugList.removeChild(debugList.children[0]);
-            }
-            debugList.scrollTop = debugList.scrollHeight; // Auto-scroll to bottom
-        }
+        // Hapus kode yang memanipulasi DOM untuk menyembunyikan pesan debug
+        // const debugList = document.getElementById('debug-list');
+        // const debugDiv = document.getElementById('debug-messages');
+        // if (debugList && debugDiv) {
+        //     debugDiv.style.display = 'block'; // Ensure it's visible
+        //     const listItem = document.createElement('li');
+        //     listItem.textContent = msg;
+        //     debugList.appendChild(listItem);
+        //     // Keep only the last few messages to prevent overflow
+        //     if (debugList.children.length > 10) {
+        //         debugList.removeChild(debugList.children[0]);
+        //     }
+        //     debugList.scrollTop = debugList.scrollHeight; // Auto-scroll to bottom
+        // }
+        // Untuk debugging, Anda bisa tetap menggunakan console.log
+        console.log("DEBUG: ", msg);
     }
 
 
@@ -469,21 +473,6 @@ document.addEventListener('DOMContentLoaded', () => {
             addDebugMessage(`Displaying battle: ${idol1.name} VS ${idol2.name}`);
         }
 
-        function startNextComparison() {
-            addDebugMessage("Starting next comparison.");
-            if (comparisonsMade >= totalComparisons) {
-                finishSorting();
-                return;
-            }
-            const [idol1, idol2] = getRandomUniquePair();
-            if (idol1 && idol2) {
-                displayBattle(idol1, idol2);
-            } else {
-                addDebugMessage("No valid pair from getRandomUniquePair. Finishing sorting.");
-                finishSorting(); // This means no unique pair could be found (e.g., list is too small or all compared)
-            }
-        }
-
         function handleChoice(winnerName) {
             addDebugMessage(`Choice made: ${winnerName}`);
             const idol1 = currentList.find(m => m.name === idol1Card?.dataset.name);
@@ -570,49 +559,110 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         downloadResultsButton?.addEventListener('click', () => {
             addDebugMessage("Download results button clicked.");
-            if (resultsSection) {
-                html2canvas(resultsSection, {
+            if (resultsSection && resultsTitle && resultsList) {
+                // Create a temporary container for the screenshot
+                const tempContainer = document.createElement('div');
+                tempContainer.style.position = 'absolute';
+                tempContainer.style.top = '-9999px'; // Move off-screen
+                tempContainer.style.left = '-9999px';
+                tempContainer.style.width = resultsSection.offsetWidth + 'px'; // Maintain width
+                tempContainer.style.backgroundColor = '#ffffff'; // Ensure white background
+                tempContainer.style.padding = '20px'; // Add some padding similar to results-section
+
+                // Clone the title and append to temp container
+                const clonedTitle = resultsTitle.cloneNode(true);
+                tempContainer.appendChild(clonedTitle);
+
+                // Create a list for top 7 members
+                const top7List = document.createElement('div');
+                top7List.classList.add('results-list'); // Apply same class for styling if needed
+                top7List.style.maxWidth = '300px'; // Limit width for better screenshot if needed
+
+                // Append only the first 7 result items
+                const resultItems = resultsList.querySelectorAll('.result-item');
+                for (let i = 0; i < Math.min(7, resultItems.length); i++) {
+                    top7List.appendChild(resultItems[i].cloneNode(true));
+                }
+                tempContainer.appendChild(top7List);
+
+                // Append the temporary container to the body to be rendered by html2canvas
+                document.body.appendChild(tempContainer);
+
+                html2canvas(tempContainer, {
                     useCORS: true,
                     scale: 2,
                     backgroundColor: '#ffffff'
                 }).then(canvas => {
                     const link = document.createElement('a');
-                    link.download = `rain_tree_sorter_results_${currentLang}.png`;
+                    link.download = `rain_tree_sorter_results_top7_${currentCategory}_${currentLang}.png`;
                     link.href = canvas.toDataURL('image/png');
                     link.click();
-                    addDebugMessage("Results image downloaded.");
+                    tempContainer.remove(); // Remove the temporary container after download
+                    addDebugMessage("Results image (top 7) downloaded.");
                 }).catch(error => {
+                    console.error("ERROR: HTML2Canvas download failed:", error); // Use console.error for actual errors
+                    tempContainer.remove(); // Ensure removal even on error
                     addDebugMessage(`ERROR: HTML2Canvas download failed: ${error.message}`);
                 });
             } else {
-                addDebugMessage("ERROR: Results section not found for download.");
+                addDebugMessage("ERROR: Results section, title, or list not found for download.");
             }
         });
         shareResultsButton?.addEventListener('click', () => {
             addDebugMessage("Share results button clicked.");
             if (navigator.share && resultsSection) {
-                html2canvas(resultsSection, {
+                // For sharing, let's create a temporary canvas with top 7 as well
+                const tempContainer = document.createElement('div');
+                tempContainer.style.position = 'absolute';
+                tempContainer.style.top = '-9999px';
+                tempContainer.style.left = '-9999px';
+                tempContainer.style.width = resultsSection.offsetWidth + 'px';
+                tempContainer.style.backgroundColor = '#ffffff';
+                tempContainer.style.padding = '20px';
+
+                const clonedTitle = resultsTitle.cloneNode(true);
+                tempContainer.appendChild(clonedTitle);
+
+                const top7List = document.createElement('div');
+                top7List.classList.add('results-list');
+                const resultItems = resultsList.querySelectorAll('.result-item');
+                for (let i = 0; i < Math.min(7, resultItems.length); i++) {
+                    top7List.appendChild(resultItems[i].cloneNode(true));
+                }
+                tempContainer.appendChild(top7List);
+                document.body.appendChild(tempContainer);
+
+
+                html2canvas(tempContainer, {
                     useCORS: true,
                     scale: 2,
                     backgroundColor: '#ffffff'
                 }).then(canvas => {
                     canvas.toBlob(function(blob) {
                         const filesArray = [
-                            new File([blob], `rain_tree_sorter_results_${currentLang}.png`, {
+                            new File([blob], `rain_tree_sorter_results_top7_${currentCategory}_${currentLang}.png`, {
                                 type: 'image/png',
                                 lastModified: new Date().getTime()
                             })
                         ];
-                        const shareText = `Lihat hasil sorting Rain Tree saya untuk kategori ${translations[currentLang][`category${currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)}`]}!`;
+                        const shareText = `Lihat hasil sorting Rain Tree saya untuk kategori ${translations[currentLang][`category${currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)}`]}! Ini 7 teratas versi saya:`;
                         navigator.share({
                             files: filesArray,
                             title: translations[currentLang]['pageTitle'],
                             text: shareText,
                             url: window.location.href,
-                        }).then(() => addDebugMessage('Share successful'))
-                        .catch((error) => addDebugMessage(`ERROR: Sharing failed: ${error.message}`));
+                        }).then(() => {
+                            addDebugMessage('Share successful');
+                            tempContainer.remove(); // Remove temporary container
+                        })
+                        .catch((error) => {
+                            addDebugMessage(`ERROR: Sharing failed: ${error.message}`);
+                            tempContainer.remove(); // Remove temporary container
+                        });
                     }, 'image/png');
                 }).catch(error => {
+                    console.error("ERROR: HTML2Canvas share failed:", error); // Use console.error for actual errors
+                    tempContainer.remove(); // Ensure removal even on error
                     addDebugMessage(`ERROR: HTML2Canvas share failed: ${error.message}`);
                 });
             } else {
@@ -1061,6 +1111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     cardToCapture.remove(); // Remove the clone after capture
                 }).catch(error => {
                     console.error("HTML2Canvas download failed:", error);
+                    cardToCapture.remove(); // Ensure removal even on error
                 });
             } else {
                 console.error("Match result card not found for download.");
