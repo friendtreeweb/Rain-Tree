@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+ document.addEventListener('DOMContentLoaded', () => {
     // Definisi anggota (nama asli/Romaji - ini adalah kunci untuk terjemahan)
     const members = [
         { name: 'Asamiya Hinata', image: 'RT_AsamiyaHinata.jpeg' }, // New member
@@ -766,4 +766,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     backgroundColor: '#ffffff'
                 }).then(canvas => {
                     const link = document.createElement('a');
-                    link.download = `rain_tree_senbatsu_
+                    link.download = `rain_tree_senbatsu_${currentLang}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    console.log("Senbatsu result card captured and downloaded.");
+                }).catch(error => {
+                    console.error("HTML2Canvas senbatsu download failed:", error);
+                });
+            } else {
+                console.error("Senbatsu result card not found for download.");
+            }
+        });
+    } // Closing bracket for if (window.location.pathname.includes('senbatsu.html'))
+
+    // Set initial language for any common elements (like language buttons themselves)
+    document.querySelectorAll('.language-selector .lang-button').forEach(button => {
+        button.addEventListener('click', () => {
+            setLanguage(button.dataset.lang);
+        });
+    });
+
+    // Handle initial language setting based on current page
+    if (window.location.pathname.includes('sorter.html')) {
+        setLanguage('id'); // Default language for sorter page
+    } else if (window.location.pathname.includes('matchmaker.html')) {
+        setLanguage('id'); // Default language for matchmaker page
+    } else if (window.location.pathname.includes('senbatsu.html')) {
+        setLanguage('id'); // Default language for senbatsu page
+    } else {
+        setLanguage('id'); // Default for other pages like index.html
+    }
+}); // Closing bracket for DOMContentLoaded
