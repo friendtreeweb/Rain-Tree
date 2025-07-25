@@ -1,4 +1,4 @@
- document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     // Definisi anggota (nama asli/Romaji - ini adalah kunci untuk terjemahan)
     const members = [
         { name: 'Asamiya Hinata', image: 'RT_AsamiyaHinata.jpeg' }, // New member
@@ -266,12 +266,12 @@
     // ----- Sorter Logic -----
     let allMembers = []; // Will hold members with their category-specific data
     let currentCategoryMembers = []; // Members for the current sorting category
-    let sorted = [];
     let comparisons = [];
     let currentComparison = 0;
     let totalComparisons = 0;
     let currentComparisonIdol1 = null;
     let currentComparisonIdol2 = null;
+    let memberScores = new Map(); // Map to store memberName -> score for sorting results
 
     const categorySelection = document.getElementById('category-selection');
     const sorterSection = document.getElementById('sorter-section');
@@ -302,9 +302,16 @@
         addDebugMessage(`Initializing sorter for category: ${category}`);
         loadCategoryData(category);
 
-        currentCategoryMembers = shuffleArray([...allMembers]); // Use all members for now, shuffled
-        sorted = [];
-        comparisons = buildComparisons(currentCategoryMembers.length);
+        currentCategoryMembers = shuffleArray([...allMembers]); // Shuffled for initial battle presentation
+        
+        // Initialize scores for all members
+        memberScores.clear();
+        currentCategoryMembers.forEach(member => {
+            memberScores.set(member.name, 0); // Start with 0 wins
+        });
+
+        // Build all pairwise comparisons
+        comparisons = buildComparisons(currentCategoryMembers);
         currentComparison = 0;
         totalComparisons = comparisons.length;
 
@@ -326,39 +333,17 @@
         return array;
     }
 
-    // This is the core merge sort comparison builder
-    function buildComparisons(n) {
-        let queue = [];
+    // Updated: Builds all unique pairwise comparisons and shuffles them
+    function buildComparisons(membersArray) { // Now accepts the members array directly
         let comparisons = [];
-
-        for (let i = 0; i < n; i++) {
-            queue.push([i]);
+        for (let i = 0; i < membersArray.length; i++) {
+            for (let j = i + 1; j < membersArray.length; j++) {
+                // Store actual member objects for comparison
+                comparisons.push([membersArray[i], membersArray[j]]);
+            }
         }
-
-        while (queue.length > 1) {
-            let left = queue.shift();
-            let right = queue.shift();
-            let merged = [];
-            let i = 0, j = 0;
-
-            while (i < left.length && j < right.length) {
-                // Add comparison to the list
-                comparisons.push([left[i], right[j]]);
-                merged.push(null); // Placeholder for eventual sorted order
-                i++;
-                j++;
-            }
-
-            while (i < left.length) {
-                merged.push(left[i++]);
-            }
-            while (j < right.length) {
-                merged.push(right[j++]);
-            }
-            queue.push(merged);
-        }
-        addDebugMessage(`Generated ${comparisons.length} raw comparisons.`);
-        return comparisons;
+        // Shuffle the order of comparisons to make battles random
+        return shuffleArray(comparisons);
     }
 
     function updateProgress() {
@@ -381,9 +366,9 @@
             return;
         }
 
-        const [idol1Index, idol2Index] = comparisons[currentComparison];
-        currentComparisonIdol1 = currentCategoryMembers[idol1Index];
-        currentComparisonIdol2 = currentCategoryMembers[idol2Index];
+        // Get actual member objects from the pre-built comparisons array
+        currentComparisonIdol1 = comparisons[currentComparison][0];
+        currentComparisonIdol2 = comparisons[currentComparison][1];
 
         if (!currentComparisonIdol1 || !currentComparisonIdol2) {
             addDebugMessage("ERROR: One or both idols for comparison are undefined. Aborting comparison.");
@@ -415,42 +400,52 @@
 
     function handleChoice(winnerName) {
         addDebugMessage(`Choice made: ${winnerName}`);
+        
+        // Increment winner's score
+        if (memberScores.has(winnerName)) {
+            memberScores.set(winnerName, memberScores.get(winnerName) + 1);
+            addDebugMessage(`${winnerName} score: ${memberScores.get(winnerName)}`);
+        } else {
+            addDebugMessage(`ERROR: ${winnerName} not found in memberScores map.`);
+        }
+
         currentComparison++;
         updateProgress();
+        startNextComparison();
+    }
 
-        const [index1, index2] = comparisons[currentComparison - 1]; // Get the just completed comparison
-        const winnerIndex = currentCategoryMembers.findIndex(m => m.name === winnerName);
-        const loserIndex = winnerIndex === index1 ? index2 : index1;
-
-        // Implement merge logic: place winner before loser in sorted array
-        // This is a simplified merge step. A full merge sort implementation is more complex.
-        // For a simple sorter, we just need to know who won.
-        // The results list will be generated by the final sorted array.
-
+    function handleDraw() { // Function for Draw button
+        addDebugMessage("Draw selected. No score changes for this round.");
+        currentComparison++;
+        updateProgress();
         startNextComparison();
     }
 
     function showResults() {
-        addDebugMessage("Sorting complete. Displaying results.");
+        addDebugMessage("Sorting complete. Displaying results based on scores.");
         sorterSection.classList.add('hidden');
         resultsSection.classList.remove('hidden');
 
         const resultsList = document.getElementById('results-list');
         resultsList.innerHTML = ''; // Clear previous results
 
-        // Simple sorting for display (bubble sort for demonstration)
-        // For a true sorter, `sorted` array would be the result of merge sort.
-        // Since `handleChoice` only increments comparisons, `sorted` array isn't populated for actual ranks.
-        // Let's create a temporary ranking based on choices.
-        // A proper sorter would use the comparison results to build the final sorted array.
-        // For this simple choice system, we can't truly "sort" without a complex algorithm.
-        // Instead, let's just display members for now, or use a simple win count if implemented.
-
-        const finalRankedMembers = currentCategoryMembers.map(m => ({
-            name: m.name,
-            image: m.image,
-            wins: 0 // Placeholder
-        })).sort((a,b) => a.name.localeCompare(b.name)); // Just alphabetical for now
+        // Convert Map to array, sort by score (descending), then by translated name (alphabetical for ties)
+        const finalRankedMembers = Array.from(memberScores.entries()) // [[name, score], ...]
+            .map(([name, score]) => ({ // Convert to object {name, score, image}
+                name: name,
+                score: score,
+                image: members.find(m => m.name === name)?.image // Find original image from the main 'members' array
+            }))
+            .sort((a, b) => {
+                // Primary sort: by score (descending)
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                // Secondary sort: by translated name (ascending) for ties
+                const nameA = translations[currentLang][a.name] || a.name;
+                const nameB = translations[currentLang][b.name] || b.name;
+                return nameA.localeCompare(nameB);
+            });
 
         addDebugMessage("Generating results list.");
         finalRankedMembers.forEach((member, index) => {
@@ -460,7 +455,7 @@
                 <span class="rank">${index + 1}.</span>
                 <img src="images/${member.image}" alt="${member.name}" class="result-img">
                 <span class="result-name">${translations[currentLang][member.name] || member.name}</span>
-            `;
+                <span class="result-score"> (${member.score} wins)</span> `;
             resultsList.appendChild(listItem);
         });
 
@@ -545,14 +540,8 @@
             addDebugMessage(`Idol 2 card clicked (${idol2Card.dataset.name}).`);
             handleChoice(idol2Card.dataset.name);
         });
-        drawButton?.addEventListener('click', () => {
-            addDebugMessage("Draw button clicked.");
-            // In a sorter, draw means both are equal, or skip this comparison.
-            // For simplicity, we just advance to the next comparison, effectively skipping this pair.
-            currentComparison++;
-            updateProgress();
-            startNextComparison();
-        });
+        drawButton?.addEventListener('click', handleDraw); // Use the new handleDraw function
+        
         restartButton?.addEventListener('click', () => {
             addDebugMessage("Restart button clicked.");
             location.reload(); // Simple reload to restart
