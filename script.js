@@ -314,8 +314,8 @@ document.addEventListener('DOMContentLoaded', () => {
         addDebugMessage(`Initializing sorter for category: ${category}`);
         loadCategoryData(category);
 
-        currentCategoryMembers = shuffleArray([...allMembers]); // Shuffled for initial battle presentation
-
+        currentCategoryMembers = shuffleArray([...allMembers]); 
+        
         // Initialize scores for all members
         memberScores.clear();
         currentCategoryMembers.forEach(member => {
@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
             addDebugMessage("ERROR: displayBattle: One or more idol elements are NULL, cannot display battle. Check sorter.html IDs.");
             return;
         }
-
+        
         idol1Card.dataset.name = idol1.name;
         idol1Img.src = `images/${idol1.image}`;
         idol1Name.textContent = translations[currentLang][idol1.name] || idol1.name;
@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleChoice(winnerName) {
         addDebugMessage(`Choice made: ${winnerName}`);
-
+        
         // Increment winner's score
         if (memberScores.has(winnerName)) {
             memberScores.set(winnerName, memberScores.get(winnerName) + 1);
@@ -553,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
             handleChoice(idol2Card.dataset.name);
         });
         drawButton?.addEventListener('click', handleDraw); // Use the new handleDraw function
-
+        
         restartButton?.addEventListener('click', () => {
             addDebugMessage("Restart button clicked.");
             location.reload(); // Simple reload to restart
@@ -652,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         generateFortuneButton?.addEventListener('click', generateFortune);
-
+        
         downloadFortuneButton?.addEventListener('click', () => {
             const cardToCapture = matchResultCard; // Use the actual card element
             if (cardToCapture) {
@@ -697,22 +697,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function populateSenbatsuSizeSelect() {
             senbatsuSizeSelect.innerHTML = '<option value="">Pilih Jumlah</option>';
-            const maxMembers = members.length;
-            const commonSizes = [1, 3, 5, 7, 10, 12, 16, 17]; // Example common senbatsu sizes
+            const maxMembers = members.length; // This is 17
 
-            commonSizes.forEach(size => {
-                if (size <= maxMembers) {
-                    const option = document.createElement('option');
-                    option.value = size;
-                    option.textContent = `${size} Anggota`;
-                    senbatsuSizeSelect.appendChild(option);
-                }
-            });
-            // Also add max members if not already in commonSizes
-            if (!commonSizes.includes(maxMembers)) {
+            // Loop from 1 to maxMembers to add all options
+            for (let i = 1; i <= maxMembers; i++) {
                 const option = document.createElement('option');
-                option.value = maxMembers;
-                option.textContent = `${maxMembers} Anggota`;
+                option.value = i;
+                option.textContent = `${i} Anggota`;
                 senbatsuSizeSelect.appendChild(option);
             }
         }
@@ -723,21 +714,21 @@ document.addEventListener('DOMContentLoaded', () => {
             switch (num) {
                 case 1: return [1];
                 case 2: return [2];
-                case 3: return [2, 1]; // 2 (back), 1 (front)
-                case 4: return [2, 2];
-                case 5: return [3, 2];
+                case 3: return [3]; // 2 (back), 1 (front)
+                case 4: return [4];
+                case 5: return [4, 1];
                 case 6: return [3, 3];
                 case 7: return [4, 3]; // 4 (back), 3 (front)
-                case 8: return [4, 4];
-                case 9: return [5, 4];
-                case 10: return [5, 5];
-                case 11: return [6, 5];
-                case 12: return [6, 6];
-                case 13: return [7, 6];
-                case 14: return [7, 7];
-                case 15: return [8, 7];
+                case 8: return [6, 2];
+                case 9: return [6, 3];
+                case 10: return [5, 4, 1];
+                case 11: return [6, 4, 1];
+                case 12: return [6, 4, 2];
+                case 13: return [6, 4, 3];
+                case 14: return [7, 4, 3];
+                case 15: return [7, 5, 3];
                 case 16: return [7, 6, 3]; // Classic 16-member senbatsu: 7 (back), 6 (middle), 3 (front)
-                case 17: return [9, 8];
+                case 17: return [8, 6, 3];
                 default:
                     // Fallback for other numbers: try to create rows for a pyramid effect
                     let calculatedLayout = [];
@@ -745,7 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Estimate number of rows, usually around sqrt(num) or num/average_row_size
                     let numRowsEstimate = Math.max(2, Math.ceil(Math.sqrt(num * 0.75))); // Adjust for more rows
                     let baseRowCapacity = Math.ceil(num / numRowsEstimate);
-
+                    
                     while (tempNum > 0) {
                         let currentRowSize = Math.min(baseRowCapacity, tempNum);
                         calculatedLayout.unshift(currentRowSize); // Add to the front to reverse order (smallest first visually)
@@ -782,7 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         slotDiv.classList.add('senbatsu-slot');
                         rowDiv.appendChild(slotDiv); // Append to rowDiv if new
                     }
-
+                    
                     slotDiv.dataset.slotIndex = slotIndex;
                     const currentAssigned = assignedSenbatsuMembers.get(slotIndex);
 
