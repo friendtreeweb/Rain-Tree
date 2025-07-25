@@ -509,7 +509,243 @@ h2 {
     opacity: 0.7;
 }
 
+/* --- Senbatsu Formation Section --- */
+#senbatsu-formation-section {
+    padding: 20px;
+    background-color: #f0f8f7; /* Warna latar belakang yang lebih terang */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
 
+#senbatsu-formation-section h2 {
+    text-align: center;
+    color: #00796b;
+    margin-bottom: 15px;
+}
+
+.senbatsu-controls {
+    display: flex;
+    flex-direction: column; /* Ubah menjadi kolom */
+    align-items: center; /* Pusatkan item */
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.senbatsu-controls label {
+    font-weight: bold;
+    color: #333;
+}
+
+.senbatsu-controls select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    min-width: 150px; /* Lebar minimum untuk select */
+}
+
+.senbatsu-controls button {
+    padding: 10px 20px;
+    background-color: #00796b;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+.senbatsu-controls button:hover {
+    background-color: #004d40;
+}
+
+/* --- KUNCI: Style untuk Senbatsu Formation Grid & Tapering --- */
+#senbatsu-formation-grid {
+    display: flex;
+    flex-direction: column; /* Stack rows vertically */
+    align-items: center; /* Center the rows themselves horizontally */
+    gap: 8px; /* Space between rows */
+    padding: 15px; /* Some padding for the whole grid */
+    border: 2px dashed #a7ffeb; /* Garis putus-putus untuk batas formasi */
+    border-radius: 10px;
+    background-color: #e0f2f1; /* Latar belakang untuk area formasi */
+    margin: 20px auto; /* Centering the entire grid container */
+    max-width: 90%; /* Batasi lebar keseluruhan grid */
+    box-sizing: border-box; /* Pastikan padding dan border dihitung dalam width */
+}
+
+.formation-row {
+    display: flex;
+    justify-content: center; /* Center items within the row */
+    align-items: flex-end; /* Align members to the bottom of the row */
+    gap: 5px; /* Space between member slots */
+    width: 100%; /* Penting: agar max-width dan margin auto bekerja */
+    margin: 0 auto; /* Center the row itself within the grid container */
+    flex-wrap: nowrap; /* Pastikan slot tetap dalam satu baris */
+}
+
+.formation-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end; /* Pastikan konten di bawah */
+    width: 80px; /* Lebar tetap untuk setiap slot member */
+    height: 110px; /* Tinggi tetap untuk konsistensi */
+    background-color: #ffffff;
+    border: 1px solid #b2dfdb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding-bottom: 5px; /* Sedikit padding di bawah */
+    box-sizing: border-box; /* Agar padding tidak menambah lebar/tinggi */
+    flex-shrink: 0; /* Mencegah slot menyusut */
+    flex-grow: 0;   /* Mencegah slot membesar */
+}
+
+.formation-slot:hover {
+    box-shadow: 0 0 8px rgba(0, 121, 107, 0.4);
+    transform: translateY(-2px);
+}
+
+.formation-slot.filled {
+    border-color: #00796b; /* Border lebih gelap untuk slot terisi */
+}
+
+.formation-slot img {
+    width: 70px; /* Lebar gambar member */
+    height: 70px; /* Tinggi gambar member */
+    object-fit: cover;
+    border-radius: 50%; /* Membuat gambar lingkaran */
+    border: 2px solid #a7ffeb; /* Border sekitar gambar */
+    margin-bottom: 5px; /* Jarak antara gambar dan nama */
+}
+
+.formation-slot p.member-name {
+    font-size: 0.75em; /* Ukuran font lebih kecil untuk nama */
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin: 0;
+    padding: 0 2px;
+    height: 25px; /* Tinggi tetap untuk nama agar tidak menggeser layout */
+    display: flex; /* Gunakan flex untuk pusatkan teks secara vertikal */
+    align-items: center;
+    justify-content: center;
+    white-space: normal; /* Izinkan nama membungkus jika terlalu panjang */
+    overflow-wrap: break-word; /* Pecah kata panjang */
+    line-height: 1.2;
+}
+
+
+/* --- Member Selector Popup --- */
+.member-selector-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s;
+}
+
+.member-selector-popup-overlay.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+.member-selector-popup {
+    background-color: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    max-height: 80vh; /* Batasi tinggi popup */
+    overflow-y: auto; /* Aktifkan scroll jika konten melebihi tinggi */
+    position: relative;
+    transform: translateY(20px);
+    transition: transform 0.3s ease-out;
+}
+
+.member-selector-popup-overlay.active .member-selector-popup {
+    transform: translateY(0);
+}
+
+.member-selector-popup h3 {
+    text-align: center;
+    margin-top: 0;
+    color: #00796b;
+    margin-bottom: 20px;
+}
+
+.member-selector-popup .member-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.member-selector-popup .member-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px;
+    border: 1px solid #e0f2f1;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    width: 90px; /* Lebar item di popup */
+    box-sizing: border-box;
+}
+
+.member-selector-popup .member-item:hover:not(.selected) {
+    background-color: #e0f2f1;
+    border-color: #00796b;
+}
+
+.member-selector-popup .member-item.selected {
+    background-color: #b2dfdb;
+    border-color: #004d40;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.member-selector-popup .member-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #a7ffeb;
+    margin-bottom: 5px;
+}
+
+.member-selector-popup .member-item span {
+    font-size: 0.85em;
+    text-align: center;
+    font-weight: bold;
+    color: #333;
+    white-space: nowrap; /* Cegah nama membungkus di popup */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Tambahkan elipsis jika nama terlalu panjang */
+    max-width: 80px; /* Batasi lebar teks nama di popup */
+}
+
+.member-selector-popup .popup-close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #555;
+}
 /* Gaya Khusus untuk Matchmaker */
 .matchmaker-section {
     display: flex;
