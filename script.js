@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'Suzuno Mio', image: 'RT_SuzunoMio.jpeg' },
         { name: 'Nakamata Miki', image: 'RT_NakamataMiki.jpeg' },
         { name: 'Nagase Mari', image: 'RT_NagaseMari.jpeg' }, // New member
-        { name: 'Nino Fuka', image: 'RT_NinoFuka.jpeg' }, // Name changed from Nino Fuka
+        { name: 'Niino Fuka', image: 'RT_NiinoFuka.jpeg' }, // Name changed from Nino Fuka
         { name: 'Hashimoto Maki', image: 'RT_HashimotoMaki.jpeg' },
         { name: 'Hayama Rico', image: 'RT_HayamaRico.jpeg' },
         { name: 'Mizuno Noa', image: 'RT_MizunoNoa.jpeg' },
@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadResults: "Unduh Hasil (Gambar)",
             shareResults: "Bagikan",
             restartButton: "Mulai Ulang",
+            selectMemberHint: "Pilih Anggota", // New translation key for senbatsu slot
             // Member names (Indonesian) - Jika tidak ada terjemahan khusus, biarkan sama dengan nama Romaji
             'Asamiya Hinata': 'Asamiya Hinata',
             'Ayase Kotori': 'Ayase Kotori',
@@ -64,8 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
             fortuneResult: "Hasil Ramalan Cinta",
             // Senbatsu page translations
             senbatsuTitle: "Formasi Senbatsu Rain Tree",
-            selectSenbatsuMembers: "Pilih Anggota Senbatsu:",
-            generateSenbatsu: "Buat Formasi Senbatsu",
+            selectSenbatsuMembers: "Pilih Jumlah Anggota Senbatsu:", // Updated key
+            generateSenbatsu: "Buat Formasi Senbatsu", // This button is less crucial now, but kept
             senbatsuResult: "Formasi Senbatsu"
         },
         en: {
@@ -83,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadResults: "Download Results (Image)",
             shareResults: "Share",
             restartButton: "Restart",
+            selectMemberHint: "Select Member",
             // Member names (English)
             'Asamiya Hinata': 'Asamiya Hinata',
             'Ayase Kotori': 'Ayase Kotori',
@@ -109,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fortuneResult: "Fortune Result",
             // Senbatsu page translations
             senbatsuTitle: "Rain Tree Senbatsu Formation",
-            selectSenbatsuMembers: "Select Senbatsu Members:",
+            selectSenbatsuMembers: "Select Number of Senbatsu Members:", // Updated key
             generateSenbatsu: "Generate Senbatsu Formation",
             senbatsuResult: "Senbatsu Formation"
         },
@@ -128,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadResults: "結果をダウンロード (画像)",
             shareResults: "シェア",
             restartButton: "再開",
+            selectMemberHint: "メンバーを選択",
             // Member names (Japanese) - Updated with provided Kanji
             'Asamiya Hinata': '朝宮日向',
             'Ayase Kotori': '綾瀬ことり',
@@ -229,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (senbatsuTitle && translations[currentLang].senbatsuTitle) {
             senbatsuTitle.textContent = translations[currentLang].senbatsuTitle;
         }
-        const selectSenbatsuMembersLabel = document.getElementById('select-senbatsu-members-label');
+        const selectSenbatsuMembersLabel = document.querySelector('label[for="senbatsu-size-select"]'); // Correct selector for label
         if (selectSenbatsuMembersLabel && translations[currentLang].selectSenbatsuMembers) {
             selectSenbatsuMembersLabel.textContent = translations[currentLang].selectSenbatsuMembers;
         }
@@ -241,11 +244,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (senbatsuResultTitle && translations[currentLang].senbatsuResult) {
             senbatsuResultTitle.textContent = translations[currentLang].senbatsuResult;
         }
-        // Re-render selected members in senbatsu box if any
-        displaySelectedSenbatsuMembers();
+        // Update hint text in slots if they exist
+        document.querySelectorAll('.senbatsu-slot p[data-key="selectMemberHint"]').forEach(p => {
+            p.textContent = translations[currentLang].selectMemberHint;
+        });
+        // Repopulate senbatsu size dropdown
+        populateSenbatsuSizeSelect(); // To update 'Anggota' text if lang changes
     }
 
-    // Fungsi Debugging
+    // Fungsi Debugging (dapat dinonaktifkan dengan menghapus div #debug-messages dari HTML)
     function addDebugMessage(msg) {
         const debugList = document.getElementById('debug-list');
         const debugDiv = document.getElementById('debug-messages');
@@ -303,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadCategoryData(category);
 
         currentCategoryMembers = shuffleArray([...allMembers]); // Shuffled for initial battle presentation
-        
+
         // Initialize scores for all members
         memberScores.clear();
         currentCategoryMembers.forEach(member => {
@@ -387,402 +394,5 @@ document.addEventListener('DOMContentLoaded', () => {
             addDebugMessage("ERROR: displayBattle: One or more idol elements are NULL, cannot display battle. Check sorter.html IDs.");
             return;
         }
-        
-        idol1Card.dataset.name = idol1.name;
-        idol1Img.src = `images/${idol1.image}`;
-        idol1Name.textContent = translations[currentLang][idol1.name] || idol1.name;
 
-        idol2Card.dataset.name = idol2.name;
-        idol2Img.src = `images/${idol2.image}`;
-        idol2Name.textContent = translations[currentLang][idol2.name] || idol2.name;
-        addDebugMessage(`Displaying battle: ${idol1.name} VS ${idol2.name}`);
-    }
-
-    function handleChoice(winnerName) {
-        addDebugMessage(`Choice made: ${winnerName}`);
-        
-        // Increment winner's score
-        if (memberScores.has(winnerName)) {
-            memberScores.set(winnerName, memberScores.get(winnerName) + 1);
-            addDebugMessage(`${winnerName} score: ${memberScores.get(winnerName)}`);
-        } else {
-            addDebugMessage(`ERROR: ${winnerName} not found in memberScores map.`);
-        }
-
-        currentComparison++;
-        updateProgress();
-        startNextComparison();
-    }
-
-    function handleDraw() { // Function for Draw button
-        addDebugMessage("Draw selected. No score changes for this round.");
-        currentComparison++;
-        updateProgress();
-        startNextComparison();
-    }
-
-    function showResults() {
-        addDebugMessage("Sorting complete. Displaying results based on scores.");
-        sorterSection.classList.add('hidden');
-        resultsSection.classList.remove('hidden');
-
-        const resultsList = document.getElementById('results-list');
-        resultsList.innerHTML = ''; // Clear previous results
-
-        // Convert Map to array, sort by score (descending), then by translated name (alphabetical for ties)
-        const finalRankedMembers = Array.from(memberScores.entries()) // [[name, score], ...]
-            .map(([name, score]) => ({ // Convert to object {name, score, image}
-                name: name,
-                score: score,
-                image: members.find(m => m.name === name)?.image // Find original image from the main 'members' array
-            }))
-            .sort((a, b) => {
-                // Primary sort: by score (descending)
-                if (b.score !== a.score) {
-                    return b.score - a.score;
-                }
-                // Secondary sort: by translated name (ascending) for ties
-                const nameA = translations[currentLang][a.name] || a.name;
-                const nameB = translations[currentLang][b.name] || b.name;
-                return nameA.localeCompare(nameB);
-            });
-
-        addDebugMessage("Generating results list.");
-        finalRankedMembers.forEach((member, index) => {
-            const listItem = document.createElement('div');
-            listItem.classList.add('result-item');
-            listItem.innerHTML = `
-                <span class="rank">${index + 1}.</span>
-                <img src="images/${member.image}" alt="${member.name}" class="result-img">
-                <span class="result-name">${translations[currentLang][member.name] || member.name}</span>
-                <span class="result-score"> (${member.score} wins)</span> `;
-            resultsList.appendChild(listItem);
-        });
-
-        const resultsTitle = document.getElementById('results-title');
-        if (resultsTitle) {
-            resultsTitle.textContent = translations[currentLang].resultsTitle;
-        }
-
-        // Add event listeners for results actions
-        document.getElementById('download-results').onclick = () => {
-            captureResultsImage();
-        };
-        document.getElementById('share-results').onclick = () => {
-            shareResults();
-        };
-    }
-
-    function captureResultsImage() {
-        const resultsSectionToCapture = document.getElementById('results-section');
-        if (resultsSectionToCapture) {
-            addDebugMessage("Capturing results image.");
-            // Temporarily clone and make visible for accurate capture
-            const clone = resultsSectionToCapture.cloneNode(true);
-            clone.style.display = 'block';
-            clone.style.position = 'absolute';
-            clone.style.left = '-9999px'; // Move off-screen
-            clone.style.width = resultsSectionToCapture.offsetWidth + 'px'; // Maintain width
-            clone.style.backgroundColor = '#ffffff'; // Ensure white background
-
-            document.body.appendChild(clone);
-
-            html2canvas(clone, {
-                useCORS: true,
-                scale: 2,
-                backgroundColor: '#ffffff'
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `RainTreeIdolSorter_Results_${currentLang}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                clone.remove();
-                addDebugMessage("Results image captured and downloaded.");
-            }).catch(error => {
-                addDebugMessage(`ERROR: HTML2Canvas results capture failed: ${error.message}`);
-                console.error("HTML2Canvas results capture failed:", error);
-                clone.remove();
-            });
-        } else {
-            addDebugMessage("ERROR: Results section not found for capture.");
-        }
-    }
-
-    function shareResults() {
-        addDebugMessage("Sharing results (functionality not fully implemented, typically relies on browser Share API or social media SDKs).");
-        if (navigator.share) {
-            // This is a placeholder. Actual sharing requires generating the image or text.
-            navigator.share({
-                title: translations[currentLang].pageTitle,
-                text: translations[currentLang].resultsTitle,
-                url: window.location.href
-            }).then(() => addDebugMessage('Share successful')).catch((error) => addDebugMessage(`Share failed: ${error}`));
-        } else {
-            alert("Fitur share tidak didukung di browser ini.");
-        }
-    }
-
-    // Event Listeners for Sorter
-    if (window.location.pathname.includes('sorter.html')) {
-        document.querySelectorAll('.category-buttons button').forEach(button => {
-            button.addEventListener('click', () => {
-                const category = button.dataset.category;
-                addDebugMessage(`Category selected: ${category}`);
-                initializeSorter(category);
-            });
-        });
-
-        idol1Card?.addEventListener('click', () => {
-            addDebugMessage(`Idol 1 card clicked (${idol1Card.dataset.name}).`);
-            handleChoice(idol1Card.dataset.name);
-        });
-        idol2Card?.addEventListener('click', () => {
-            addDebugMessage(`Idol 2 card clicked (${idol2Card.dataset.name}).`);
-            handleChoice(idol2Card.dataset.name);
-        });
-        drawButton?.addEventListener('click', handleDraw); // Use the new handleDraw function
-        
-        restartButton?.addEventListener('click', () => {
-            addDebugMessage("Restart button clicked.");
-            location.reload(); // Simple reload to restart
-        });
-
-        // Initial language setup for sorter page
-        setLanguage('id'); // Default language
-        addDebugMessage("Sorter page script fully executed.");
-    }
-
-    // ----- Matchmaker Logic -----
-    if (window.location.pathname.includes('matchmaker.html')) {
-        const yourIdolSelect = document.getElementById('your-idol-select');
-        const partnerIdolSelect = document.getElementById('partner-idol-select');
-        const generateFortuneButton = document.getElementById('generate-fortune');
-        const fortuneResultDiv = document.getElementById('fortune-result');
-        const fortuneResultTitle = document.getElementById('fortune-result-title');
-        const matchResultCard = document.getElementById('match-result-card');
-        const yourIdolImage = document.getElementById('your-idol-image');
-        const yourIdolName = document.getElementById('your-idol-name');
-        const partnerIdolImage = document.getElementById('partner-idol-image');
-        const partnerIdolName = document.getElementById('partner-idol-name');
-        const fortuneText = document.getElementById('fortune-text');
-        const downloadFortuneButton = document.getElementById('download-fortune');
-
-        function populateMemberSelect() {
-            yourIdolSelect.innerHTML = '<option value="">Pilih Idola Anda</option>';
-            partnerIdolSelect.innerHTML = '<option value="">Pilih Idola Pasangan</option>';
-            members.forEach(member => {
-                const translatedName = translations[currentLang][member.name] || member.name;
-                const option1 = document.createElement('option');
-                option1.value = member.name;
-                option1.textContent = translatedName;
-                yourIdolSelect.appendChild(option1);
-
-                const option2 = document.createElement('option');
-                option2.value = member.name;
-                option2.textContent = translatedName;
-                partnerIdolSelect.appendChild(option2);
-            });
-        }
-
-        // Dummy fortune logic for demonstration
-        function generateFortune() {
-            const yourIdolNameVal = yourIdolSelect.value;
-            const partnerIdolNameVal = partnerIdolSelect.value;
-
-            if (!yourIdolNameVal || !partnerIdolNameVal) {
-                alert("Mohon pilih kedua idola untuk ramalan.");
-                return;
-            }
-
-            const yourIdol = members.find(m => m.name === yourIdolNameVal);
-            const partnerIdol = members.find(m => m.name === partnerIdolNameVal);
-
-            if (!yourIdol || !partnerIdol) {
-                alert("Idola tidak ditemukan.");
-                return;
-            }
-
-            // Simple hash-based fortune for demo
-            const fortuneScores = {
-                'Ayase Kotori_Endo Rino': 'Perfect match! Cinta sejati!',
-                'Endo Rino_Ayase Kotori': 'Perfect match! Cinta sejati!',
-                'Yoshikawa Umi_Mizuno Noa': 'Koneksi kuat, masa depan cerah!',
-                'Mizuno Noa_Yoshikawa Umi': 'Koneksi kuat, masa depan cerah!',
-                // Add more specific pairings or a generic fallback
-            };
-            const fortuneKey = `${yourIdol.name}_${partnerIdol.name}`;
-            const reverseFortuneKey = `${partnerIdol.name}_${yourIdol.name}`;
-
-            let fortuneResultText = fortuneScores[fortuneKey] || fortuneScores[reverseFortuneKey];
-
-            if (!fortuneResultText) {
-                // Fallback generic fortune
-                const seed = yourIdol.name.charCodeAt(0) + partnerIdol.name.charCodeAt(0);
-                if (seed % 3 === 0) {
-                    fortuneResultText = "Sangat cocok! Ada ikatan yang kuat di antara kalian.";
-                } else if (seed % 3 === 1) {
-                    fortuneResultText = "Cukup cocok. Ada potensi untuk hubungan yang lebih dalam.";
-                } else {
-                    fortuneResultText = "Membutuhkan usaha. Perbedaan bisa membuat hubungan menarik!";
-                }
-            }
-
-
-            yourIdolImage.src = `images/${yourIdol.image}`;
-            yourIdolName.textContent = translations[currentLang][yourIdol.name] || yourIdol.name;
-            partnerIdolImage.src = `images/${partnerIdol.image}`;
-            partnerIdolName.textContent = translations[currentLang][partnerIdol.name] || partnerIdol.name;
-            fortuneText.textContent = fortuneResultText;
-
-            fortuneResultDiv.classList.remove('hidden');
-            matchResultCard.classList.remove('hidden'); // Ensure the card itself is visible
-            fortuneResultTitle.textContent = translations[currentLang].fortuneResult;
-        }
-
-        generateFortuneButton?.addEventListener('click', generateFortune);
-        
-        downloadFortuneButton?.addEventListener('click', () => {
-            const cardToCapture = matchResultCard; // Use the actual card element
-            if (cardToCapture) {
-                console.log("Attempting to capture match result card.");
-                html2canvas(cardToCapture, {
-                    useCORS: true,
-                    scale: 2,
-                    backgroundColor: '#ffffff'
-                }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = `rain_tree_love_fortune_${currentLang}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                    // cardToCapture.remove(); // Do not remove the original card after capture
-                    console.log("Match result card captured and downloaded.");
-                }).catch(error => {
-                    console.error("HTML2Canvas download failed:", error);
-                    // cardToCapture.remove(); // Do not remove the original card on error
-                });
-            } else {
-                console.error("Match result card not found for download.");
-            }
-        });
-
-        // Initial setup for matchmaker page
-        setLanguage('id'); // Default language for matchmaker page
-        populateMemberSelect(); // Initial population of dropdown
-        console.log("Matchmaker page script fully executed.");
-    }
-
-    // ----- Senbatsu Logic -----
-    if (window.location.pathname.includes('senbatsu.html')) {
-        const senbatsuSelect = document.getElementById('senbatsu-select');
-        const generateSenbatsuButton = document.getElementById('generate-senbatsu');
-        const senbatsuFormationDiv = document.getElementById('senbatsu-formation');
-        const selectedMembersContainer = document.getElementById('selected-members-container');
-        const senbatsuResultTitle = document.getElementById('senbatsu-result-title');
-        const downloadSenbatsuButton = document.getElementById('download-senbatsu');
-        
-        // Ensure senbatsuResultCard is properly defined in HTML for use here.
-        // Assuming senbatsu-result-card is the element to be captured
-        const senbatsuResultCard = document.getElementById('senbatsu-result-card'); 
-
-        function populateSenbatsuSelect() {
-            senbatsuSelect.innerHTML = '<option value="">Pilih Anggota</option>';
-            members.forEach(member => {
-                const translatedName = translations[currentLang][member.name] || member.name;
-                const option = document.createElement('option');
-                option.value = member.name;
-                option.textContent = translatedName;
-                senbatsuSelect.appendChild(option);
-            });
-        }
-
-        let selectedSenbatsuMembers = [];
-
-        senbatsuSelect?.addEventListener('change', (event) => {
-            const memberName = event.target.value;
-            if (memberName && !selectedSenbatsuMembers.some(m => m.name === memberName)) {
-                const member = members.find(m => m.name === memberName);
-                if (member) {
-                    selectedSenbatsuMembers.push(member);
-                    displaySelectedSenbatsuMembers();
-                }
-            }
-            senbatsuSelect.value = ""; // Reset dropdown
-        });
-
-        function displaySelectedSenbatsuMembers() {
-            selectedMembersContainer.innerHTML = '';
-            selectedSenbatsuMembers.forEach((member, index) => {
-                const memberDiv = document.createElement('div');
-                memberDiv.classList.add('selected-senbatsu-member');
-                memberDiv.innerHTML = `
-                    <img src="images/${member.image}" alt="${member.name}">
-                    <p>${translations[currentLang][member.name] || member.name}</p>
-                    <button class="remove-senbatsu-member" data-member-name="${member.name}">X</button>
-                `;
-                selectedMembersContainer.appendChild(memberDiv);
-            });
-            attachRemoveListeners();
-        }
-
-        function attachRemoveListeners() {
-            document.querySelectorAll('.remove-senbatsu-member').forEach(button => {
-                button.onclick = (event) => {
-                    const memberName = event.target.dataset.memberName;
-                    selectedSenbatsuMembers = selectedSenbatsuMembers.filter(m => m.name !== memberName);
-                    displaySelectedSenbatsuMembers();
-                };
-            });
-        }
-
-        generateSenbatsuButton?.addEventListener('click', () => {
-            if (selectedSenbatsuMembers.length === 0) {
-                alert("Mohon pilih setidaknya satu anggota untuk formasi senbatsu.");
-                return;
-            }
-            senbatsuFormationDiv.classList.remove('hidden');
-            senbatsuResultTitle.textContent = translations[currentLang].senbatsuResult;
-            // The displaySelectedSenbatsuMembers() already renders to selected-members-container,
-            // which is assumed to be part of senbatsu-formation for capture.
-            // No extra rendering needed here unless structure is different.
-        });
-
-        downloadSenbatsuButton?.addEventListener('click', () => {
-            if (senbatsuResultCard) { // Ensure this ID exists in senbatsu.html for the card to be captured
-                console.log("Attempting to capture senbatsu result card.");
-                html2canvas(senbatsuResultCard, {
-                    useCORS: true,
-                    scale: 2,
-                    backgroundColor: '#ffffff'
-                }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = `rain_tree_senbatsu_${currentLang}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                    console.log("Senbatsu result card captured and downloaded.");
-                }).catch(error => {
-                    console.error("HTML2Canvas senbatsu download failed:", error);
-                });
-            } else {
-                console.error("Senbatsu result card not found for download.");
-            }
-        });
-    } // Closing bracket for if (window.location.pathname.includes('senbatsu.html'))
-
-    // Set initial language for any common elements (like language buttons themselves)
-    document.querySelectorAll('.language-selector .lang-button').forEach(button => {
-        button.addEventListener('click', () => {
-            setLanguage(button.dataset.lang);
-        });
-    });
-
-    // Handle initial language setting based on current page
-    if (window.location.pathname.includes('sorter.html')) {
-        setLanguage('id'); // Default language for sorter page
-    } else if (window.location.pathname.includes('matchmaker.html')) {
-        setLanguage('id'); // Default language for matchmaker page
-    } else if (window.location.pathname.includes('senbatsu.html')) {
-        setLanguage('id'); // Default language for senbatsu page
-    } else {
-        setLanguage('id'); // Default for other pages like index.html
-    }
-}); // Closing bracket for DOMContentLoaded
+        idol1Card.dataset
