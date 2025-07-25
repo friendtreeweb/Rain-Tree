@@ -684,31 +684,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Logika tapering: hitung jumlah baris dan anggota per baris
             const rows = [];
             let remainingMembers = size;
-            let rowCount = 0;
-
-            // Logika sederhana untuk tapering: dimulai dari 1 member di baris teratas jika total ganjil,
-            // atau 2 member di baris teratas jika total genap dan besar.
-            // Kemudian tambahkan baris dengan 2, 3, 4, ... anggota.
-            // Ini adalah pendekatan dasar, Anda bisa menyesuaikannya.
-            let membersInFirstRow = 0;
-            if (size === 1) {
-                membersInFirstRow = 1;
-            } else if (size === 2) {
-                membersInFirstRow = 2;
-            } else if (size === 3) {
-                membersInFirstRow = 1; // Contoh: Center di depan
-            } else if (size === 4) {
-                membersInFirstRow = 2;
-            } else if (size === 5) {
-                membersInFirstRow = 2; // Contoh: Baris 2 + Baris 3
-            } else if (size === 6) {
-                membersInFirstRow = 2; // Contoh: Baris 2 + Baris 4
-            } else if (size === 7) {
-                membersInFirstRow = 1; // Contoh: Baris 1 + Baris 2 + Baris 4
-            } else { // Untuk ukuran lebih besar, coba pola standar (3, 4, 5...)
-                 membersInFirstRow = Math.ceil(size / 3); // Coba bagi rata ke 3 baris
-                 if (membersInFirstRow < 1) membersInFirstRow = 1;
-            }
             
             // Atur ulang pola tapering untuk jumlah umum seperti 7, 16
             // Untuk 7: 1 (center) - 2 - 4 (baris belakang)
@@ -722,31 +697,31 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (size === 2) {
                 rows.push(2);
             } else if (size === 3) {
-                rows.push(1, 2);
+                rows.push(2, 1); // 2 di depan, 1 di belakang
             } else if (size === 4) {
                 rows.push(2, 2);
             } else if (size === 5) {
-                rows.push(2, 3);
+                rows.push(3, 2);
             } else if (size === 6) {
-                rows.push(2, 4);
+                rows.push(4, 2);
             } else if (size === 7) { // 7 (populer)
-                rows.push(1, 2, 4); // Center, depan, belakang
+                rows.push(4, 2, 1); // Belakang, Tengah, Center
             } else if (size === 8) {
-                rows.push(2, 2, 4);
+                rows.push(4, 2, 2);
             } else if (size === 9) {
                 rows.push(3, 3, 3);
             } else if (size === 10) {
-                rows.push(2, 3, 5);
+                rows.push(5, 3, 2);
             } else if (size === 11) {
-                rows.push(3, 3, 5);
+                rows.push(5, 3, 3);
             } else if (size === 12) {
-                rows.push(3, 4, 5);
+                rows.push(5, 4, 3);
             } else if (size === 13) {
-                rows.push(3, 5, 5);
+                rows.push(5, 5, 3);
             } else if (size === 14) {
-                rows.push(4, 5, 5);
+                rows.push(5, 5, 4);
             } else if (size === 15) {
-                rows.push(3, 4, 4, 4); // Contoh 4 baris
+                rows.push(4, 4, 4, 3); // Contoh 4 baris
             } else if (size === 16) {
                 rows.push(4, 4, 4, 4); // Contoh 4 baris rata
             }
@@ -775,13 +750,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
-            // Sesuaikan urutan rows agar tapering dari kecil ke besar
-            rows.sort((a,b) => a - b);
+            // Sesuaikan urutan rows agar tapering dari besar ke kecil (segitiga terbalik)
+            rows.sort((a,b) => b - a); // Perubahan di sini!
             
-            // Ini untuk memastikan posisi Center ada di tengah baris pertama jika jumlah anggota ganjil.
-            // Untuk memastikan center di tengah, kita akan menempatkannya di array senbatsuFormation[0]
-            // dan mengatur CSS untuk menengahkan baris.
-
             let globalMemberIndex = 0;
             rows.forEach((numMembersInRow, rowIndex) => {
                 const rowDiv = document.createElement('div');
