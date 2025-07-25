@@ -647,6 +647,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const senbatsuFormationGrid = document.getElementById('senbatsu-formation-grid');
         const resetSenbatsuButton = document.getElementById('reset-senbatsu');
         const downloadSenbatsuButton = document.getElementById('download-senbatsu');
+        const senbatsuContainer = document.querySelector('.senbatsu-container'); // Pastikan ini ada di senbatsu.html
+
 
         const memberSelectorPopupOverlay = document.getElementById('member-selector-popup-overlay');
         const popupCloseButton = memberSelectorPopupOverlay?.querySelector('.popup-close-button');
@@ -654,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const popupTitle = memberSelectorPopupOverlay?.querySelector('h3');
 
 
-        if (!senbatsuSizeInput || !senbatsuFormationGrid || !resetSenbatsuButton || !downloadSenbatsuButton || !memberSelectorPopupOverlay || !popupCloseButton || !memberListInPopup || !popupTitle) {
+        if (!senbatsuSizeInput || !senbatsuFormationGrid || !resetSenbatsuButton || !downloadSenbatsuButton || !memberSelectorPopupOverlay || !popupCloseButton || !memberListInPopup || !popupTitle || !senbatsuContainer) {
             console.error("ERROR: One or more critical Senbatsu DOM elements not found. Senbatsu script might not function correctly.");
             // return; // Don't return, let's try to proceed for debugging
         } else {
@@ -662,46 +664,159 @@ document.addEventListener('DOMContentLoaded', () => {
             senbatsuFormation = Array(maxSenbatsuMembers).fill(null);
         }
 
+        // KUNCI PERUBAHAN: Fungsi generateFormationGrid untuk tapering
         function generateFormationGrid(size) {
             if (!senbatsuFormationGrid) return;
-            senbatsuFormationGrid.innerHTML = '';
+            senbatsuFormationGrid.innerHTML = ''; // Kosongkan grid yang ada
 
             if (size <= 0) {
                 senbatsuFormation = [];
                 return;
             }
 
+            // Sesuaikan ukuran formasi yang sudah ada dengan ukuran baru
             const newFormation = Array(size).fill(null);
-            for(let i=0; i < Math.min(senbatsuFormation.length, size); i++) {
+            for (let i = 0; i < Math.min(senbatsuFormation.length, size); i++) {
                 newFormation[i] = senbatsuFormation[i];
             }
             senbatsuFormation = newFormation;
 
-            for (let i = 0; i < size; i++) {
-                const slotDiv = document.createElement('div');
-                slotDiv.classList.add('formation-slot');
-                slotDiv.dataset.index = i;
+            // Logika tapering: hitung jumlah baris dan anggota per baris
+            const rows = [];
+            let remainingMembers = size;
+            let rowCount = 0;
 
-                const memberInSlot = senbatsuFormation[i];
-
-                if (memberInSlot) {
-                    slotDiv.classList.add('filled');
-                    slotDiv.innerHTML = `
-                        <img src="images/${memberInSlot.image}" alt="${memberInSlot.name}">
-                        <p class="member-name">${translations[currentLang][memberInSlot.name] || memberInSlot.name}</p>
-                    `;
-                } else {
-                    // Teks ini akan selalu muncul di slot kosong
-                    slotDiv.innerHTML = `<p class="member-name">${translations[currentLang]['emptySlotText']}</p>`;
-                }
-
-                slotDiv.addEventListener('click', () => {
-                    currentEditingSlotIndex = i;
-                    showMemberSelectorPopup();
-                });
-                senbatsuFormationGrid.appendChild(slotDiv);
+            // Logika sederhana untuk tapering: dimulai dari 1 member di baris teratas jika total ganjil,
+            // atau 2 member di baris teratas jika total genap dan besar.
+            // Kemudian tambahkan baris dengan 2, 3, 4, ... anggota.
+            // Ini adalah pendekatan dasar, Anda bisa menyesuaikannya.
+            let membersInFirstRow = 0;
+            if (size === 1) {
+                membersInFirstRow = 1;
+            } else if (size === 2) {
+                membersInFirstRow = 2;
+            } else if (size === 3) {
+                membersInFirstRow = 1; // Contoh: Center di depan
+            } else if (size === 4) {
+                membersInFirstRow = 2;
+            } else if (size === 5) {
+                membersInFirstRow = 2; // Contoh: Baris 2 + Baris 3
+            } else if (size === 6) {
+                membersInFirstRow = 2; // Contoh: Baris 2 + Baris 4
+            } else if (size === 7) {
+                membersInFirstRow = 1; // Contoh: Baris 1 + Baris 2 + Baris 4
+            } else { // Untuk ukuran lebih besar, coba pola standar (3, 4, 5...)
+                 membersInFirstRow = Math.ceil(size / 3); // Coba bagi rata ke 3 baris
+                 if (membersInFirstRow < 1) membersInFirstRow = 1;
             }
-            console.log("Formation grid generated with size:", size);
+            
+            // Atur ulang pola tapering untuk jumlah umum seperti 7, 16
+            // Untuk 7: 1 (center) - 2 - 4 (baris belakang)
+            // Untuk 16: 4 - 4 - 4 - 4 (contoh) atau 1 - 2 - 4 - 9 (jika tapering sangat curam)
+            // Mari kita coba pola yang lebih umum: mulai dari 1 atau 2, lalu tambah 1 atau 2 per baris.
+            let currentRowSize = 0;
+            let memberIndex = 0;
+
+            if (size === 1) {
+                rows.push(1);
+            } else if (size === 2) {
+                rows.push(2);
+            } else if (size === 3) {
+                rows.push(1, 2);
+            } else if (size === 4) {
+                rows.push(2, 2);
+            } else if (size === 5) {
+                rows.push(2, 3);
+            } else if (size === 6) {
+                rows.push(2, 4);
+            } else if (size === 7) { // 7 (populer)
+                rows.push(1, 2, 4); // Center, depan, belakang
+            } else if (size === 8) {
+                rows.push(2, 2, 4);
+            } else if (size === 9) {
+                rows.push(3, 3, 3);
+            } else if (size === 10) {
+                rows.push(2, 3, 5);
+            } else if (size === 11) {
+                rows.push(3, 3, 5);
+            } else if (size === 12) {
+                rows.push(3, 4, 5);
+            } else if (size === 13) {
+                rows.push(3, 5, 5);
+            } else if (size === 14) {
+                rows.push(4, 5, 5);
+            } else if (size === 15) {
+                rows.push(3, 4, 4, 4); // Contoh 4 baris
+            } else if (size === 16) {
+                rows.push(4, 4, 4, 4); // Contoh 4 baris rata
+            }
+            else { // Untuk ukuran lain, sebarkan secara merata atau buat tapering kustom
+                let numRows;
+                if (size <= 7) numRows = 3;
+                else if (size <= 10) numRows = 3;
+                else if (size <= 16) numRows = 4;
+                else numRows = Math.ceil(size / 5); // Default: sekitar 5 member per baris
+
+                let basePerRowCount = Math.floor(size / numRows);
+                let remainder = size % numRows;
+                for (let i = 0; i < numRows; i++) {
+                    let count = basePerRowCount;
+                    if (i < remainder) {
+                        count++;
+                    }
+                    if (count > 0) { // Hanya tambahkan baris jika ada anggota
+                         rows.push(count);
+                    }
+                }
+                // Jika masih ada sisa, coba distribusikan ke baris yang ada, atau tambahkan baris baru
+                while (rows.reduce((sum, val) => sum + val, 0) < size) {
+                    // Coba tambahkan ke baris terakhir
+                    rows[rows.length - 1]++;
+                }
+            }
+            
+            // Sesuaikan urutan rows agar tapering dari kecil ke besar
+            rows.sort((a,b) => a - b);
+            
+            // Ini untuk memastikan posisi Center ada di tengah baris pertama jika jumlah anggota ganjil.
+            // Untuk memastikan center di tengah, kita akan menempatkannya di array senbatsuFormation[0]
+            // dan mengatur CSS untuk menengahkan baris.
+
+            let globalMemberIndex = 0;
+            rows.forEach((numMembersInRow, rowIndex) => {
+                const rowDiv = document.createElement('div');
+                rowDiv.classList.add('formation-row');
+                rowDiv.dataset.row = rowIndex;
+                rowDiv.style.gridTemplateColumns = `repeat(${numMembersInRow}, 1fr)`; // Untuk flexbox atau grid
+
+                for (let i = 0; i < numMembersInRow; i++) {
+                    const slotDiv = document.createElement('div');
+                    slotDiv.classList.add('formation-slot');
+                    // Data index sekarang menjadi indeks global di senbatsuFormation
+                    slotDiv.dataset.index = globalMemberIndex;
+
+                    const memberInSlot = senbatsuFormation[globalMemberIndex];
+
+                    if (memberInSlot) {
+                        slotDiv.classList.add('filled');
+                        slotDiv.innerHTML = `
+                            <img src="images/${memberInSlot.image}" alt="${memberInSlot.name}">
+                            <p class="member-name">${translations[currentLang][memberInSlot.name] || memberInSlot.name}</p>
+                        `;
+                    } else {
+                        slotDiv.innerHTML = `<p class="member-name">${translations[currentLang]['emptySlotText']}</p>`;
+                    }
+
+                    slotDiv.addEventListener('click', () => {
+                        currentEditingSlotIndex = parseInt(slotDiv.dataset.index);
+                        showMemberSelectorPopup();
+                    });
+                    rowDiv.appendChild(slotDiv);
+                    globalMemberIndex++;
+                }
+                senbatsuFormationGrid.appendChild(rowDiv);
+            });
+            console.log("Formation grid generated with size:", size, " and rows:", rows);
         }
 
         function showMemberSelectorPopup() {
@@ -782,48 +897,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         resetSenbatsuButton?.addEventListener('click', resetSenbatsuFormation);
 
+        // KUNCI PERUBAHAN: Fungsi downloadSenbatsuButton yang lebih baik
         downloadSenbatsuButton?.addEventListener('click', () => {
-            if (senbatsuFormationGrid) {
-                const tempContainer = document.createElement('div');
-                tempContainer.style.display = 'inline-block';
-                tempContainer.style.backgroundColor = '#ffffff';
-                tempContainer.style.padding = '20px';
-                tempContainer.style.borderRadius = '8px';
-
-                const gridClone = senbatsuFormationGrid.cloneNode(true);
-                gridClone.querySelectorAll('.formation-slot').forEach((originalSlot, index) => {
-                    const clonedSlot = gridClone.querySelector(`[data-index="${index}"]`);
-                    const memberInSlot = senbatsuFormation[index];
-
-                    if (memberInSlot) {
-                        clonedSlot.classList.add('filled');
-                        clonedSlot.innerHTML = `
-                            <img src="images/${memberInSlot.image}" alt="${memberInSlot.name}">
-                            <p class="member-name">${translations[currentLang][memberInSlot.name] || memberInSlot.name}</p>
-                        `;
-                    } else {
-                        clonedSlot.innerHTML = `<p class="member-name">${translations[currentLang]['emptySlotText']}</p>`;
-                        clonedSlot.style.border = '2px dashed #b2dfdb';
-                    }
-                });
-
-                tempContainer.appendChild(gridClone);
-
-                document.body.appendChild(tempContainer);
-
-                html2canvas(tempContainer, {
+            if (senbatsuContainer) { // Tangkap div terluar senbatsu-container
+                html2canvas(senbatsuContainer, {
                     useCORS: true,
                     scale: 2,
-                    backgroundColor: '#ffffff'
+                    backgroundColor: '#ffffff' // Pastikan background putih
                 }).then(canvas => {
                     const link = document.createElement('a');
                     link.download = `rain_tree_senbatsu_formation_${currentLang}.png`;
                     link.href = canvas.toDataURL('image/png');
                     link.click();
-                    tempContainer.remove();
+                    console.log("Senbatsu image downloaded.");
+                }).catch(error => {
+                    console.error("ERROR: HTML2Canvas download failed:", error);
                 });
             } else {
-                console.error("Senbatsu formation grid not found for download.");
+                console.error("Senbatsu container not found for download.");
             }
         });
 
@@ -835,14 +926,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Initial setup for the senbatsu page
-        setLanguage('id'); // Ensures language is set even if not changed by user
-        if (senbatsuSizeInput) { // Ensure senbatsuSizeInput exists before accessing its value
+        // Pengaturan awal untuk halaman senbatsu
+        setLanguage('id'); // Atur bahasa default
+        if (senbatsuSizeInput) {
+            // Panggil generateFormationGrid setelah bahasa diatur dan elemen sudah siap
             generateFormationGrid(parseInt(senbatsuSizeInput.value));
         }
-        console.log("Senbatsu page script fully executed.");
+        console.log("Script halaman Senbatsu sepenuhnya dieksekusi.");
     }
-
     // --- Logic for Matchmaker Page (`matchmaker.html`) ---
     else if (window.location.pathname.includes('matchmaker.html')) {
         console.log("Loading Matchmaker Page script...");
