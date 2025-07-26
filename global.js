@@ -97,3 +97,30 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+// ===============================
+// LOVE FORTUNE TRANSLATIONS
+// ===============================
+const loveFortune = {
+  id: [
+    { max: 20, text: "Seperti minyak dan air... mungkin lebih baik tetap berteman." },
+    { max: 40, text: "Ada benih-benih rasa, tapi belum tumbuh jadi bunga." },
+    { max: 60, text: "Bisa jadi pasangan yang seru—kalau saling mengerti." },
+    { max: 80, text: "Chemistry-nya kuat! Kalian cocok jadi pasangan duet romantis." },
+    { max: 100, text: "Takdir sudah menulis nama kalian berdua di bintang." }
+  ],
+  en: [
+    { max: 20, text: "Like oil and water… better stay friends." },
+    { max: 40, text: "A spark is there, but the flame is shy." },
+    { max: 60, text: "Could be a fun match—if you open your hearts." },
+    { max: 80, text: "Your energies align—this could be something beautiful." },
+    { max: 100, text: "Destiny approves. This love is meant to be." }
+  ],
+  jp: [
+    { max: 20, text: "油と水のように…友達のままで。" },
+    { max: 40, text: "少しだけドキドキ。でもまだ早いかも。" },
+    { max: 60, text: "いい相性かも。距離を縮めてみて。" },
+    { max: 80, text: "心のリズムが合ってる！いい感じ。" },
+    { max: 100, text: "運命が味方してる。真実の恋かも！" }
+  ]
+};
+
