@@ -1089,3 +1089,37 @@ document.addEventListener('DOMContentLoaded', () => {
         setLanguage('id'); // This will only be called if it's not a sorter/senbatsu/matchmaker page (e.g., index.html)
     }
 });
+
+window.addEventListener("DOMContentLoaded", () => {
+  const page = document.body.dataset.page;
+
+  if (page === "sorter") {
+    initializeSorter();
+  } else if (page === "matchmaker") {
+    initializeMatchmaker();
+  } else if (page === "senbatsu") {
+    if (typeof initializeSenbatsu === "function") {
+      initializeSenbatsu();
+    } else {
+      const senbatsuSizeSelect = document.getElementById('senbatsu-size-select');
+      const resetButton = document.getElementById('reset-formation');
+      const downloadButton = document.getElementById('download-senbatsu');
+
+      const defaultSize = parseInt(senbatsuSizeSelect.value, 10);
+      generateFormationGrid(defaultSize);
+
+      senbatsuSizeSelect.addEventListener('change', () => {
+        const size = parseInt(senbatsuSizeSelect.value, 10);
+        generateFormationGrid(size);
+      });
+
+      if (resetButton) {
+        resetButton.addEventListener('click', resetFormation);
+      }
+
+      if (downloadButton) {
+        downloadButton.addEventListener('click', downloadFormationAsImage);
+      }
+    }
+  }
+});
