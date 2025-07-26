@@ -1,62 +1,59 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title data-key="pageTitle">Rain Tree Idola</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
-<body>
-  <div class="container senbatsu-container">
-    <div class="back-home-button">
-      <button onclick="location.href='index.html'">← Kembali ke Menu Utama</button>
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title data-key="pageTitle">
+   Rain Tree Idola
+  </title>
+  <link href="style.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <div class="container">
+   <div class="back-home-button">
+    <button onclick="location.href='index.html'">
+     ← Kembali ke Menu Utama
+    </button>
+   </div>
+   <div class="language-selector">
+    <button class="lang-button active" data-lang="id">
+     ID
+    </button>
+    <button class="lang-button" data-lang="en">
+     EN
+    </button>
+    <button class="lang-button" data-lang="jp">
+     JP
+    </button>
+   </div>
+   <h1 data-key="senbatsuTitle">
+    Formasi Senbatsu Rain Tree
+   </h1>
+   <div class="flow-section" id="senbatsu-flow">
+    <div class="senbatsu-controls">
+     <label data-key="selectSenbatsuMembers" for="senbatsu-size-select">
+      Pilih Jumlah Anggota Senbatsu:
+     </label>
+     <select id="senbatsu-size">
+     </select>
     </div>
-
-    <div class="language-selector">
-      <button class="lang-button active" data-lang="id">ID</button>
-      <button class="lang-button" data-lang="en">EN</button>
-      <button class="lang-button" data-lang="jp">JP</button>
+    <div class="section hidden" id="senbatsu-formation">
+     <h3 id="senbatsu-result-title">
+      Formasi Senbatsu
+     </h3>
+     <div class="senbatsu-slots-container" id="senbatsu-formation-grid">
+     </div>
+     <div class="share-download-options">
+      <button data-key="downloadResults" id="download-senbatsu">
+       Unduh Formasi (Gambar)
+      </button>
+     </div>
     </div>
-
-    <h1 data-key="senbatsuTitle">Formasi Senbatsu Rain Tree</h1>
-
-    <div id="senbatsu-flow" class="flow-section">
-      <div class="senbatsu-controls">
-        <label for="senbatsu-size" data-key="selectSenbatsuMembers">Pilih Jumlah Anggota Senbatsu:</label>
-        <select id="senbatsu-size">
-          <option value="7">7</option>
-          <option value="9">9</option>
-          <option value="11">11</option>
-          <option value="16">16</option>
-        </select>
-      </div>
-
-      <div id="senbatsu-formation" class="section">
-        <h3 id="senbatsu-result-title">Formasi Senbatsu</h3>
-        <div id="senbatsu-formation-grid" class="senbatsu-slots-container"></div>
-
-        <div class="senbatsu-actions">
-          <button id="reset-senbatsu" data-key="resetSenbatsuButton">Reset Formasi</button>
-        </div>
-
-        <div class="share-download-options">
-          <button id="download-senbatsu" data-key="downloadResults">Unduh Formasi (Gambar)</button>
-        </div>
-      </div>
-    </div>
+   </div>
   </div>
-
-  <!-- Popup untuk memilih member -->
-  <div id="member-selector-popup-overlay" class="member-selector-popup-overlay">
-    <div class="member-selector-popup">
-      <button class="popup-close-button">&times;</button>
-      <h3>Pilih Member</h3>
-      <div class="member-list"></div>
-    </div>
-  </div>
-
-  <!-- Library dan script utama -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="script.js"></script>
-</body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+  </script>
+  <script src="script.js">
+  </script>
+ </body>
 </html>
