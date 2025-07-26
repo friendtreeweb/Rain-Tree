@@ -666,13 +666,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // KUNCI PERUBAHAN: Fungsi generateFormationGrid untuk tapering
         function generateFormationGrid(size) {
-            if (!senbatsuFormationGrid) return;
-            senbatsuFormationGrid.innerHTML = ''; // Kosongkan grid yang ada
+    const senbatsuFormationGrid = document.getElementById('senbatsu-formation-grid');
+    senbatsuFormationGrid.innerHTML = '';
 
-            if (size <= 0) {
-                senbatsuFormation = [];
-                return;
-            }
+    const rows = splitIntoTriangleRows(size);
+
+    rows.forEach((numMembersInRow, rowIndex) => {
+        const row = document.createElement('div');
+        row.classList.add('formation-row');
+
+        for (let i = 0; i < numMembersInRow; i++) {
+            const slot = createSenbatsuSlot();
+            row.appendChild(slot);
+        }
+
+        senbatsuFormationGrid.appendChild(row);
+    });
+}
 
             // Sesuaikan ukuran formasi yang sudah ada dengan ukuran baru
             const newFormation = Array(size).fill(null);
