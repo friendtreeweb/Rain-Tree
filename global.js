@@ -15,7 +15,7 @@ const memberList = [
   { name: "Suzuno Mio", image: "RT_SuzunoMio.jpeg" },
   { name: "Nakamata Miki", image: "RT_NakamataMiki.jpeg" },
   { name: "Nagase Mari", image: "RT_NagaseMari.jpeg" },
-  { name: "Niino Fuka", image: "RT_NiinoFuka.jpeg" },
+  { name: "Niino Fuka", image: "RT_NinoFuka.jpeg" },
   { name: "Hashimoto Maki", image: "RT_HashimotoMaki.jpeg" },
   { name: "Hayama Rico", image: "RT_HayamaRico.jpeg" },
   { name: "Mizuno Noa", image: "RT_MizunoNoa.jpeg" },
