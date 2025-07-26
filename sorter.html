@@ -1,10 +1,11 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title data-key="pageTitle">Rain Tree Idola Sorter</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style-global.css" />
+    <link rel="stylesheet" href="css/style-sorter.css" />
 </head>
 <body>
     <div class="container">
@@ -27,7 +28,7 @@
                     <button data-category="general" data-key="categoryGeneral">Umum</button>
                     <button data-category="visual" data-key="categoryVisual">Visual</button>
                     <button data-category="talent" data-key="categoryTalent">Bakat</button>
-                    <button data-category="comedian" data-key="comedian">Pelawak</button>
+                    <button data-category="comedian" data-key="categoryComedian">Pelawak</button>
                 </div>
             </div>
 
@@ -39,22 +40,23 @@
 
                 <div class="battle-container">
                     <div class="idol-card" id="idol-1">
-                        <img src="" alt="Idola 1">
+                        <img class="idol-image" src="" alt="Idola 1" />
                         <p class="idol-name"></p>
                     </div>
                     <div class="vs" data-key="vsText">VS</div>
                     <div class="idol-card" id="idol-2">
-                        <img src="" alt="Idola 2">
+                        <img class="idol-image" src="" alt="Idola 2" />
                         <p class="idol-name"></p>
                     </div>
                 </div>
+
                 <div class="controls">
                     <button id="draw-button" data-key="drawButton">Seri (Draw)</button>
                 </div>
             </div>
 
             <div id="results-section" class="section hidden">
-                <h2 id="results-title"></h2>
+                <h2 id="results-title" data-key="resultsTitle">Hasil Sorter</h2>
                 <div id="results-list"></div>
                 <div class="share-download-options">
                     <button id="download-results" data-key="downloadResults">Unduh Hasil (Gambar)</button>
@@ -65,7 +67,8 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="js/global.js"></script>
+    <script type="module" src="js/sorter.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
