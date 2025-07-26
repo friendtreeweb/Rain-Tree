@@ -28,77 +28,81 @@ const memberList = [
 // ===============================
 const translations = {
   id: {
+    pageTitle: "Rain Tree Idola Sorter",
     mainTitle: "Rain Tree Fan Tools",
     chooseTool: "Pilih Alat:",
     mainMenuSorter: "Idol Sorter",
     mainMenuSenbatsu: "Senbatsu Formation",
     mainMenuMatchmaker: "Ramalan Cinta RT",
     selectSenbatsuMembers: "Pilih Jumlah Anggota Senbatsu:",
-    downloadResults: "Unduh Formasi (Gambar)",
+    downloadResults: "Unduh Hasil (Gambar)",
     selectMemberPrompt: "Pilih Member",
     noMemberSelected: "Kosongkan Slot",
-    emptySlotText: "(kosong)"
+    emptySlotText: "(kosong)",
+    chooseCategory: "Pilih Kategori Sorter:",
+    categoryGeneral: "Umum",
+    categoryVisual: "Visual",
+    categoryTalent: "Bakat",
+    categoryComedian: "Pelawak",
+    progressText: "Memuat...",
+    vsText: "VS",
+    drawButton: "Seri (Draw)",
+    resultsTitle: "Hasil Sorter",
+    shareResults: "Bagikan",
+    restartButton: "Mulai Ulang"
   },
   en: {
+    pageTitle: "Rain Tree Idol Sorter",
     mainTitle: "Rain Tree Fan Tools",
     chooseTool: "Choose a Tool:",
     mainMenuSorter: "Idol Sorter",
     mainMenuSenbatsu: "Senbatsu Formation",
     mainMenuMatchmaker: "Love Fortune RT",
     selectSenbatsuMembers: "Select Number of Senbatsu Members:",
-    downloadResults: "Download Formation (Image)",
+    downloadResults: "Download Results (Image)",
     selectMemberPrompt: "Select Member",
     noMemberSelected: "Clear Slot",
-    emptySlotText: "(empty)"
+    emptySlotText: "(empty)",
+    chooseCategory: "Choose Sorter Category:",
+    categoryGeneral: "General",
+    categoryVisual: "Visual",
+    categoryTalent: "Talent",
+    categoryComedian: "Comedian",
+    progressText: "Loading...",
+    vsText: "VS",
+    drawButton: "Draw",
+    resultsTitle: "Sorter Results",
+    shareResults: "Share",
+    restartButton: "Restart"
   },
   jp: {
+    pageTitle: "レインツリーアイドルソート",
     mainTitle: "レインツリーファンツール",
     chooseTool: "ツールを選択:",
-    mainMenuSorter: "アイドルソーター",
+    mainMenuSorter: "アイドルソート",
     mainMenuSenbatsu: "選抜フォーメーション",
     mainMenuMatchmaker: "相性占いRT",
     selectSenbatsuMembers: "選抜メンバーの人数を選択:",
-    downloadResults: "フォーメーションを画像で保存",
+    downloadResults: "結果を画像で保存",
     selectMemberPrompt: "メンバーを選択",
     noMemberSelected: "スロットをクリア",
-    emptySlotText: "(空)"
+    emptySlotText: "(空)",
+    chooseCategory: "ソートカテゴリーを選択:",
+    categoryGeneral: "一般",
+    categoryVisual: "ビジュアル",
+    categoryTalent: "才能",
+    categoryComedian: "お笑い",
+    progressText: "読み込み中...",
+    vsText: "VS",
+    drawButton: "引き分け",
+    resultsTitle: "ソート結果",
+    shareResults: "共有",
+    restartButton: "やり直す"
   }
 };
 
 // ===============================
-// LANGUAGE SETUP
-// ===============================
-let currentLang = localStorage.getItem("lang") || "id";
-
-function setLanguage(lang) {
-  currentLang = lang;
-  localStorage.setItem("lang", lang);
-
-  document.querySelectorAll("[data-key]").forEach(el => {
-    const key = el.getAttribute("data-key");
-    const translated = translations[lang][key];
-    if (translated) el.textContent = translated;
-  });
-
-  document.querySelectorAll(".lang-button").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.lang === lang);
-  });
-}
-
-// ===============================
-// LANGUAGE BUTTON EVENT
-// ===============================
-document.addEventListener("DOMContentLoaded", () => {
-  setLanguage(currentLang);
-
-  document.querySelectorAll(".lang-button").forEach(button => {
-    button.addEventListener("click", () => {
-      setLanguage(button.dataset.lang);
-    });
-  });
-});
-// ===============================
-// LOVE FORTUNE TRANSLATIONS
+// LOVE FORTUNE PHRASES
 // ===============================
 const loveFortune = {
   id: [
@@ -124,3 +128,35 @@ const loveFortune = {
   ]
 };
 
+// ===============================
+// LANGUAGE HANDLER
+// ===============================
+let currentLang = localStorage.getItem("lang") || "id";
+function setLanguage(lang) {
+  localStorage.setItem("lang", lang);
+  currentLang = lang;
+  document.querySelectorAll("[data-key]").forEach((el) => {
+    const key = el.getAttribute("data-key");
+    const trans = translations?.[lang]?.[key];
+    if (trans) el.textContent = trans;
+  });
+  document.querySelectorAll("[data-text][data-raw]").forEach(el => {
+    const score = parseInt(el.getAttribute("data-raw"), 10);
+    const msg = loveFortune?.[lang]?.find(f => score <= f.max)?.text || "";
+    el.textContent = msg;
+  });
+}
+
+// ===============================
+// INITIALIZATION
+// ===============================
+window.addEventListener("DOMContentLoaded", () => {
+  setLanguage(currentLang);
+  document.querySelectorAll(".lang-button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".lang-button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      setLanguage(btn.dataset.lang);
+    });
+  });
+});
