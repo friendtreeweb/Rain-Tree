@@ -807,3 +807,213 @@ h2 {
         font-size: 1em;
     }
 }
+/* Tambahkan gaya baru ini atau sesuaikan yang sudah ada */
+
+/* Gaya untuk kontainer utama formasi dan panel samping */
+.senbatsu-main-content {
+    display: flex;
+    gap: 20px; /* Jarak antara formasi dan panel */
+    align-items: flex-start; /* Sejajarkan item ke atas */
+    flex-wrap: wrap; /* Izinkan wrapping pada layar kecil */
+}
+
+/* Gaya untuk area formasi senbatsu utama */
+#senbatsu-formation {
+    flex: 2; /* Biarkan formasi mengambil lebih banyak ruang */
+    min-width: 300px; /* Lebar minimum untuk mencegah penyempitan */
+    /* Pastikan tidak ada 'hidden' class di sini, JavaScript akan mengelolanya */
+}
+
+/* Gaya untuk kontainer slot di formasi utama */
+.senbatsu-slots-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* Grid responsif untuk slot */
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #eee;
+    background-color: #fcfcfc;
+    border-radius: 8px;
+}
+
+/* Gaya untuk setiap slot individu */
+.senbatsu-slot {
+    width: 80px; /* Ukuran tetap untuk setiap slot */
+    height: 80px;
+    border: 2px dashed #ccc; /* Border putus-putus untuk slot kosong */
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Sembunyikan overflow untuk gambar */
+    cursor: pointer;
+    background-color: #f0f0f0;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Gaya untuk slot kosong */
+.senbatsu-slot.empty {
+    border-color: #ccc;
+    background-color: #f0f0f0;
+}
+
+/* Gaya untuk gambar di dalam slot */
+.senbatsu-slot img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover; /* Tutupi area slot */
+    border-radius: 6px; /* Radius sedikit lebih kecil dari slot */
+}
+
+/* Efek hover pada slot */
+.senbatsu-slot:hover {
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+}
+
+/* --- Panel Anggota yang Dipilih --- */
+.selected-members-panel {
+    flex: 1; /* Biarkan panel mengambil sisa ruang */
+    min-width: 180px; /* Lebar minimum untuk panel */
+    max-width: 250px; /* Lebar maksimum agar tidak terlalu lebar */
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex; /* Gunakan flex untuk layout internal */
+    flex-direction: column;
+    gap: 10px;
+}
+
+.selected-members-panel h2 {
+    font-size: 1.2em;
+    margin-top: 0;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+/* Grid untuk menampilkan anggota yang dipilih */
+.selected-members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); /* Grid lebih kecil untuk gambar anggota */
+    gap: 5px;
+    flex-grow: 1; /* Biarkan grid memenuhi ruang yang tersedia */
+}
+
+/* Kotak individual untuk setiap anggota yang dipilih */
+.selected-member-box {
+    width: 45px;
+    height: 45px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background-color: #f7f7f7;
+    font-size: 0.7em;
+    color: #888;
+}
+
+/* Gambar di dalam kotak anggota yang dipilih */
+.selected-member-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+/* Penyesuaian gaya tombol unduh di panel */
+.selected-members-panel #download-senbatsu {
+    width: 100%;
+    margin-top: auto; /* Dorong ke bawah */
+    padding: 10px;
+    font-size: 1em;
+}
+
+/* Gaya Pop-up (pastikan ini konsisten dengan perbaikan sebelumnya) */
+.member-selector-popup {
+    display: none; /* Tersembunyi secara default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.member-selector-popup.active {
+    display: flex; /* Tampilkan saat aktif */
+}
+
+.popup-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 90%;
+    max-height: 80%;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.popup-content h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.popup-members-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+}
+
+.member-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.member-item:hover {
+    background-color: #f0f0f0;
+}
+
+.member-item img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 5px;
+}
+
+.member-item span {
+    text-align: center;
+    font-size: 0.9em;
+}
+
+.clear-slot-option {
+    background-color: #ffe0e0;
+}
+
+.clear-slot-option:hover {
+    background-color: #ffc0c0;
+}
+
+.close-popup-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #888;
+}
