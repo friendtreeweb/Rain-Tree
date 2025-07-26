@@ -807,12 +807,6 @@ h2 {
         font-size: 1em;
     }
 }
-.formation-row {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 15px;
-}
 
 .formation-row:nth-child(1) {
   margin-top: 10px;
