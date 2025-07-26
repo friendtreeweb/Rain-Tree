@@ -21,22 +21,25 @@
         <h1 data-key="senbatsuTitle">Formasi Senbatsu Rain Tree</h1>
 
         <div id="senbatsu-flow" class="flow-section">
-            <div class="senbatsu-controls">
-                <label for="senbatsu-size-select" data-key="selectSenbatsuMembers">Pilih Jumlah Anggota Senbatsu:</label>
-                <select id="senbatsu-size-select"></select>
-            </div>
+    <div class="senbatsu-controls">
+        <label for="senbatsu-size-select" data-key="selectSenbatsuMembers">Pilih Jumlah Anggota Senbatsu:</label>
+        <select id="senbatsu-size-select"></select>
+    </div>
 
-            <div id="senbatsu-formation" class="section hidden">
-                <h3 id="senbatsu-result-title">Formasi Senbatsu</h3>
-                <div id="senbatsu-slots-container" class="senbatsu-slots-container">
-                    </div>
-                <div class="share-download-options">
-                    <button id="download-senbatsu" data-key="downloadResults">Unduh Formasi (Gambar)</button>
+    <div class="senbatsu-main-content">
+        <div id="senbatsu-formation" class="section hidden">
+            <h3 id="senbatsu-result-title">Formasi Senbatsu</h3>
+            <div id="senbatsu-slots-container" class="senbatsu-slots-container">
                 </div>
-            </div>
+        </div>
+
+        <div class="selected-members-panel">
+            <h2 data-key="selectMemberPanelTitle">Pilih Member</h2>
+            <div id="selected-members-display" class="selected-members-grid">
+                </div>
+            <button id="download-senbatsu" data-key="downloadResults">Unduh Formasi (Gambar)</button>
         </div>
     </div>
-    <script src="script.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</div>
 </body>
 </html>
