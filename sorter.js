@@ -1,133 +1,97 @@
  // js/sorter.js
 
-// Menggunakan global.js yang sudah dimuat lebih dulu
+document.addEventListener("DOMContentLoaded", () => {
+  const categorySelect = document.getElementById("category-select");
+  const startButton = document.getElementById("start-sorter");
+  const sortArea = document.getElementById("sort-area");
+  const resultSection = document.getElementById("result-section");
+  const resultList = document.getElementById("result-list");
+  const progressBar = document.getElementById("progress-bar");
+  const leftImg = document.getElementById("left-img");
+  const rightImg = document.getElementById("right-img");
+  const leftName = document.getElementById("left-name");
+  const rightName = document.getElementById("right-name");
+  const drawButton = document.getElementById("draw-button");
+  const restartButton = document.getElementById("restart-button");
 
-const categoryMap = {
-  general: memberList,
-  visual: memberList.slice(0, 10), // bisa dipilah jika ada penilaian khusus
-  talent: [...memberList],
-  comedian: [...memberList]
-};
+  let candidates = [];
+  let finalResults = [];
+  let round = 0;
+  let left, right;
 
-let currentCategory = "general";
-let queue = [];
-let results = [];
-let totalBattles = 0;
-let currentPair = [];
+  startButton.addEventListener("click", () => {
+    const category = categorySelect.value;
+    if (!category) return;
+    initSorter();
+  });
 
-const sectionSorter = document.getElementById("sorter-section");
-const sectionResult = document.getElementById("results-section");
-const progressBar = document.getElementById("progress-bar");
-const progressText = document.getElementById("progress-text");
-const resultList = document.getElementById("results-list");
-
-function shuffleArray(arr) {
-  return arr
-    .map((value) => ({ value, sort: Math.random() }))
-    .sort((a, b) => a.sort - b.sort)
-    .map(({ value }) => value);
-}
-
-function prepareSorter(category) {
-  currentCategory = category;
-  const list = shuffleArray(categoryMap[category]);
-  queue = [...list];
-  results = [];
-  totalBattles = list.length - 1;
-  sectionSorter.classList.remove("hidden");
-  sectionResult.classList.add("hidden");
-  nextBattle();
-}
-
-function nextBattle() {
-  if (queue.length <= 1) {
-    results = [...queue];
-    showResults();
-    return;
+  function initSorter() {
+    candidates = shuffle([...memberList]);
+    finalResults = [];
+    round = 0;
+    resultSection.classList.add("hidden");
+    sortArea.classList.remove("hidden");
+    nextBattle();
   }
-  currentPair = [queue.shift(), queue.shift()];
-  updateUI();
-}
 
-function updateUI() {
-  const [a, b] = currentPair;
+  function nextBattle() {
+    if (candidates.length <= 1) {
+      finalResults.push(...candidates);
+      showResults();
+      return;
+    }
+    left = candidates.shift();
+    right = candidates.shift();
+    updateBattleUI();
+  }
 
-  const idol1 = document.getElementById("idol-1");
-  const idol2 = document.getElementById("idol-2");
+  function updateBattleUI() {
+    leftImg.src = `images/${left.image}`;
+    rightImg.src = `images/${right.image}`;
+    leftImg.alt = left.name?.[currentLang] || left.name?.id;
+    rightImg.alt = right.name?.[currentLang] || right.name?.id;
+    leftName.textContent = left.name?.[currentLang] || left.name?.id;
+    rightName.textContent = right.name?.[currentLang] || right.name?.id;
 
-  idol1.querySelector("img").src = `images/${a.image}`;
-  idol1.querySelector("img").alt = a.name;
-  idol1.querySelector("img").title = a.name;
-  idol1.querySelector(".idol-name").textContent = a.name;
+    const total = memberList.length;
+    const done = finalResults.length;
+    progressBar.style.width = `${(done / total) * 100}%`;
+  }
 
-  idol2.querySelector("img").src = `images/${b.image}`;
-  idol2.querySelector("img").alt = b.name;
-  idol2.querySelector("img").title = b.name;
-  idol2.querySelector(".idol-name").textContent = b.name;
+  function selectWinner(winner, loser) {
+    candidates.push(winner);
+    finalResults.push(loser);
+    nextBattle();
+  }
 
-  const progress = 1 - queue.length / totalBattles;
-  progressBar.style.width = `${progress * 100}%`;
-  progressText.textContent = `${Math.round(progress * 100)}%`;
-
-  idol1.onclick = () => chooseWinner(a, b);
-  idol2.onclick = () => chooseWinner(b, a);
-}
-
-function chooseWinner(winner, loser) {
-  queue.push(winner);
-  nextBattle();
-}
-
-function showResults() {
-  sectionSorter.classList.add("hidden");
-  sectionResult.classList.remove("hidden");
-  resultList.innerHTML = "";
-
-  results.slice(0, 10).forEach((idol, index) => {
-    const div = document.createElement("div");
-    div.className = "result-item";
-    div.innerHTML = `
-      <span class="rank">#${index + 1}</span>
-      <img src="images/${idol.image}" alt="${idol.name}">
-      <span class="name">${idol.name}</span>
-    `;
-    resultList.appendChild(div);
+  leftImg.addEventListener("click", () => selectWinner(left, right));
+  rightImg.addEventListener("click", () => selectWinner(right, left));
+  drawButton.addEventListener("click", () => {
+    candidates.push(left, right);
+    nextBattle();
   });
-}
 
-function downloadResults() {
-  html2canvas(document.querySelector("#results-section"), {
-    height: document.querySelector("#results-list").offsetHeight + 100,
-    useCORS: true,
-    backgroundColor: "#ffffff"
-  }).then((canvas) => {
-    const link = document.createElement("a");
-    link.download = `rain_tree_sorter_${currentCategory}.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+  function showResults() {
+    sortArea.classList.add("hidden");
+    resultSection.classList.remove("hidden");
+    resultList.innerHTML = "";
+    finalResults.reverse().forEach((member, index) => {
+      const li = document.createElement("li");
+      const name = member.name?.[currentLang] || member.name?.id;
+      li.textContent = `${index + 1}. ${name}`;
+      resultList.appendChild(li);
+    });
+  }
+
+  restartButton.addEventListener("click", () => {
+    initSorter();
   });
-}
 
-// ===============================
-// EVENT SETUP
-// ===============================
-
-document.querySelectorAll(".category-buttons button").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    prepareSorter(btn.dataset.category);
-  });
-});
-
-document.getElementById("draw-button").addEventListener("click", () => {
-  // jika draw, acak penempatan ulang
-  queue.push(...currentPair);
-  nextBattle();
-});
-
-document.getElementById("download-results").addEventListener("click", downloadResults);
-
-document.getElementById("restart-sorter").addEventListener("click", () => {
-  document.getElementById("sorter-section").classList.add("hidden");
-  document.getElementById("results-section").classList.add("hidden");
-  document.getElementById("category-selection").classList.remove("hidden");
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
 });
