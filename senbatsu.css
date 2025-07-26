@@ -1,0 +1,23 @@
+
+/* Tambahan khusus untuk senbatsu layout, melengkapi style.css utama */
+
+.formation-row {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.formation-slot {
+  background-color: #e0f7fa;
+  border: 1px dashed #26a69a;
+  padding: 10px;
+  min-width: 100px;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #00695c;
+  border-radius: 8px;
+}
