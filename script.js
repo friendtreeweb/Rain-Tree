@@ -319,22 +319,203 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         // Logika spesifik untuk halaman senbatsu (jika elemen-elemennya ada di DOM)
-        else if (window.location.pathname.includes('senbatsu.html')) {
-            const senbatsuFormationGrid = document.getElementById('senbatsu-formation-grid');
-            const senbatsuSizeInput = document.getElementById('senbatsu-size'); // Added this line
-            if (senbatsuFormationGrid && senbatsuSizeInput) { // Pastikan elemen ada sebelum mencoba mengakses
-                generateFormationGrid(parseInt(senbatsuSizeInput.value));
-            }
+else if (window.location.pathname.includes('senbatsu.html')) {
+    addDebugMessage("Senbatsu script loaded.");
 
-            const popupTitle = document.querySelector('.member-selector-popup h3');
-            if (popupTitle) {
-                popupTitle.textContent = translations[currentLang]['selectMemberPrompt'];
+    const senbatsuSizeSelect = document.getElementById('senbatsu-size-select');
+    const senbatsuSlotsContainer = document.getElementById('senbatsu-slots-container');
+    const generateSenbatsuButton = document.getElementById('generate-senbatsu'); // If you add a button to trigger formation
+    const resetSenbatsuButton = document.getElementById('reset-senbatsu');
+    const senbatsuFormationDiv = document.getElementById('senbatsu-formation');
+    const senbatsuResultTitle = document.getElementById('senbatsu-result-title');
+    const downloadSenbatsuButton = document.getElementById('download-senbatsu');
+    const senbatsuResultCard = document.getElementById('senbatsu-result-card'); // This ID must exist in senbatsu.html for screenshot capture
+
+    let selectedSenbatsuMembers = [];
+    let currentSelectedSlotIndex = -1; // To track which slot is being filled
+
+    // Buat elemen pop-up pemilihan member secara dinamis jika belum ada
+    let memberSelectorPopup = document.getElementById('member-selector-popup');
+    if (!memberSelectorPopup) {
+        memberSelectorPopup = document.createElement('div');
+        memberSelectorPopup.id = 'member-selector-popup';
+        memberSelectorPopup.className = 'member-selector-popup';
+        memberSelectorPopup.innerHTML = `
+            <div class="popup-content">
+                <h3>Pilih Member</h3>
+                <div class="popup-members-list" id="popup-members-list">
+                    </div>
+                <button class="close-popup-button">&times;</button>
+            </div>
+        `;
+        document.body.appendChild(memberSelectorPopup); // Attach to body
+
+        // Event listener untuk tombol tutup pop-up
+        memberSelectorPopup.querySelector('.close-popup-button')?.addEventListener('click', () => {
+            memberSelectorPopup.classList.remove('active');
+        });
+        // Event listener untuk menutup pop-up jika klik di luar konten
+        memberSelectorPopup.addEventListener('click', (event) => {
+            if (event.target === memberSelectorPopup) {
+                memberSelectorPopup.classList.remove('active');
             }
-            const clearOptionInPopup = document.querySelector('.member-selector-popup .member-item.clear-slot-option span');
-            if (clearOptionInPopup) {
-                clearOptionInPopup.textContent = translations[currentLang]['noMemberSelected'];
+        });
+    }
+    const popupMembersList = memberSelectorPopup.querySelector('#popup-members-list');
+
+    function populateSenbatsuSizeSelect() {
+        if (!senbatsuSizeSelect) {
+            addDebugMessage("ERROR: senbatsuSizeSelect not found.");
+            return;
+        }
+        senbatsuSizeSelect.innerHTML = '';
+        for (let i = 1; i <= members.length; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = `${i} Member`;
+            if (i === 7) { // Default to 7 members
+                option.selected = true;
+            }
+            senbatsuSizeSelect.appendChild(option);
+        }
+        // Trigger initial slot generation
+        generateFormationSlots(parseInt(senbatsuSizeSelect.value));
+        addDebugMessage(`Initial senbatsu size selected: ${senbatsuSizeSelect.value}`);
+    }
+
+    function generateFormationSlots(size) {
+        if (!senbatsuSlotsContainer) {
+            addDebugMessage("ERROR: senbatsuSlotsContainer not found.");
+            return;
+        }
+        addDebugMessage(`Generating ${size} senbatsu slots.`);
+        senbatsuSlotsContainer.innerHTML = ''; // Clear existing slots
+        selectedSenbatsuMembers = Array(size).fill(null); // Reset selected members
+
+        for (let i = 0; i < size; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'senbatsu-slot';
+            slot.dataset.slotIndex = i;
+            slot.innerHTML = `
+                <img src="images/placeholder.png" alt="${translations[currentLang].emptySlotText}">
+                <p class="member-name">${translations[currentLang].emptySlotText}</p>
+            `;
+            slot.addEventListener('click', () => openMemberSelectorPopup(i));
+            senbatsuSlotsContainer.appendChild(slot);
+        }
+        displaySelectedSenbatsuMembers();
+    }
+
+    function openMemberSelectorPopup(slotIndex) {
+        if (!memberSelectorPopup || !popupMembersList) {
+            addDebugMessage("ERROR: memberSelectorPopup or popupMembersList not found.");
+            return;
+        }
+        currentSelectedSlotIndex = slotIndex;
+        popupMembersList.innerHTML = ''; // Clear previous list
+
+        // Add "Clear Slot" option
+        const clearOption = document.createElement('div');
+        clearOption.className = 'member-item clear-slot-option';
+        clearOption.innerHTML = `
+            <img src="images/clear_slot_icon.png" alt="${translations[currentLang].noMemberSelected}">
+            <span>${translations[currentLang].noMemberSelected}</span>
+        `;
+        clearOption.addEventListener('click', () => {
+            selectMember(null); // Pass null to clear the slot
+        });
+        popupMembersList.appendChild(clearOption);
+
+        // Populate with all members
+        members.forEach(member => {
+            const memberItem = document.createElement('div');
+            memberItem.className = 'member-item';
+            memberItem.dataset.memberName = member.name;
+            memberItem.innerHTML = `
+                <img src="images/${member.image}" alt="${translations[currentLang][member.name] || member.name}">
+                <span>${translations[currentLang][member.name] || member.name}</span>
+            `;
+            memberItem.addEventListener('click', () => {
+                selectMember(member);
+            });
+            popupMembersList.appendChild(memberItem);
+        });
+
+        memberSelectorPopup.classList.add('active'); // Show the popup
+        addDebugMessage(`Opened member selector for slot ${slotIndex}`);
+        // Update translation for popup title
+        memberSelectorPopup.querySelector('h3').textContent = translations[currentLang].selectMemberPrompt;
+    }
+
+    function selectMember(member) {
+        if (currentSelectedSlotIndex === -1) {
+            addDebugMessage("ERROR: No slot selected for member selection.");
+            return;
+        }
+
+        if (member === null) { // Clear slot option
+            selectedSenbatsuMembers[currentSelectedSlotIndex] = null;
+            addDebugMessage(`Cleared slot ${currentSelectedSlotIndex}`);
+        } else {
+            // Check if member is already in another slot
+            const existingIndex = selectedSenbatsuMembers.findIndex((m, idx) => m && m.name === member.name && idx !== currentSelectedSlotIndex);
+            if (existingIndex !== -1) {
+                // Swap members if member is already in another slot
+                const oldMemberInCurrentSlot = selectedSenbatsuMembers[currentSelectedSlotIndex];
+                selectedSenbatsuMembers[existingIndex] = oldMemberInCurrentSlot; // Put current slot's member into old slot
+                selectedSenbatsuMembers[currentSelectedSlotIndex] = member; // Put new member into current slot
+                addDebugMessage(`Swapped ${member.name} with ${oldMemberInCurrentSlot ? oldMemberInCurrentSlot.name : 'empty slot'} between slot ${currentSelectedSlotIndex} and ${existingIndex}`);
+            } else {
+                selectedSenbatsuMembers[currentSelectedSlotIndex] = member;
+                addDebugMessage(`Selected ${member.name} for slot ${currentSelectedSlotIndex}`);
             }
         }
+        displaySelectedSenbatsuMembers();
+        memberSelectorPopup.classList.remove('active'); // Hide popup after selection
+        currentSelectedSlotIndex = -1; // Reset
+    }
+
+    function displaySelectedSenbatsuMembers() {
+        if (!senbatsuSlotsContainer) {
+            addDebugMessage("ERROR: senbatsuSlotsContainer not found for display.");
+            return;
+        }
+        const slots = senbatsuSlotsContainer.querySelectorAll('.senbatsu-slot');
+        slots.forEach((slot, index) => {
+            const img = slot.querySelector('img');
+            const nameP = slot.querySelector('.member-name');
+            const member = selectedSenbatsuMembers[index];
+
+            if (member) {
+                img.src = `images/${member.image}`;
+                img.alt = translations[currentLang][member.name] || member.name;
+                nameP.textContent = translations[currentLang][member.name] || member.name;
+                slot.classList.remove('empty');
+            } else {
+                img.src = 'images/placeholder.png'; // Use a placeholder for empty slots
+                img.alt = translations[currentLang].emptySlotText;
+                nameP.textContent = translations[currentLang].emptySlotText;
+                slot.classList.add('empty');
+            }
+        });
+        addDebugMessage("Displayed selected senbatsu members.");
+    }
+
+    // --- Event Listeners for Senbatsu Page ---
+    senbatsuSizeSelect?.addEventListener('change', (event) => {
+        generateFormationSlots(parseInt(event.target.value));
+    });
+
+    resetSenbatsuButton?.addEventListener('click', () => {
+        generateFormationSlots(parseInt(senbatsuSizeSelect.value)); // Reset to current size
+        addDebugMessage("Senbatsu formation reset.");
+    });
+
+    // Initial setup for senbatsu page
+    populateSenbatsuSizeSelect();
+    setLanguage(currentLang); // Apply initial language to new elements
+    addDebugMessage("Senbatsu page script fully executed.");
+}
         // Logika spesifik untuk halaman matchmaker (jika elemen-elemennya ada di DOM)
         else if (window.location.pathname.includes('matchmaker.html')) {
             const memberSelect = document.getElementById('member-select');
