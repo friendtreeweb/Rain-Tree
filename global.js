@@ -4,23 +4,23 @@
 // MEMBER DATA
 // ===============================
 const memberList = [
-  { name: "Asamiya Hinata", image: "RT_AsamiyaHinata.jpeg" },
-  { name: "Ayase Kotori", image: "RT_AyaseKotori.jpeg" },
-  { name: "Ichihara Tsumugi", image: "RT_IchiharaTsumugi.jpeg" },
-  { name: "Endo Rino", image: "RT_EndoRino.jpeg" },
-  { name: "Katase Manaka", image: "RT_KataseManaka.jpeg" },
-  { name: "Kato Shu", image: "RT_KatoShu.jpeg" },
-  { name: "Kurosawa Karen", image: "RT_KurosawaKaren.jpeg" },
-  { name: "Sato Rica", image: "RT_SatoRica.jpeg" },
-  { name: "Suzuno Mio", image: "RT_SuzunoMio.jpeg" },
-  { name: "Nakamata Miki", image: "RT_NakamataMiki.jpeg" },
-  { name: "Nagase Mari", image: "RT_NagaseMari.jpeg" },
-  { name: "Niino Fuka", image: "RT_NinoFuka.jpeg" },
-  { name: "Hashimoto Maki", image: "RT_HashimotoMaki.jpeg" },
-  { name: "Hayama Rico", image: "RT_HayamaRico.jpeg" },
-  { name: "Mizuno Noa", image: "RT_MizunoNoa.jpeg" },
-  { name: "Momose Suzuna", image: "RT_MomoseSuzuna.jpeg" },
-  { name: "Yoshikawa Umi", image: "RT_YoshikawaUmi.jpeg" }
+  { name: { id: "Asamiya Hinata", en: "Asamiya Hinata", jp: "朝宮日向" }, image: "RT_AsamiyaHinata.jpeg" },
+  { name: { id: "Ayase Kotori", en: "Ayase Kotori", jp: "綾瀬ことり" }, image: "RT_AyaseKotori.jpeg" },
+  { name: { id: "Ichihara Tsumugi", en: "Ichihara Tsumugi", jp: "市原紬希" }, image: "RT_IchiharaTsumugi.jpeg" },
+  { name: { id: "Endo Rino", en: "Endo Rino", jp: "遠藤莉乃" }, image: "RT_EndoRino.jpeg" },
+  { name: { id: "Katase Manaka", en: "Katase Manaka", jp: "片瀬真花" }, image: "RT_KataseManaka.jpeg" },
+  { name: { id: "Kato Shu", en: "Kato Shu", jp: "加藤柊" }, image: "RT_KatoShu.jpeg" },
+  { name: { id: "Kurosawa Karen", en: "Kurosawa Karen", jp: "黒澤禾恋" }, image: "RT_KurosawaKaren.jpeg" },
+  { name: { id: "Sato Rica", en: "Sato Rica", jp: "佐藤莉華" }, image: "RT_SatoRica.jpeg" },
+  { name: { id: "Suzuno Mio", en: "Suzuno Mio", jp: "鈴野みお" }, image: "RT_SuzunoMio.jpeg" },
+  { name: { id: "Nakamata Miki", en: "Nakamata Miki", jp: "仲俣美希" }, image: "RT_NakamataMiki.jpeg" },
+  { name: { id: "Nagase Mari", en: "Nagase Mari", jp: "永瀬真梨" }, image: "RT_NagaseMari.jpeg" },
+  { name: { id: "Niino Fuka", en: "Niino Fuka", jp: "新野楓果" }, image: "RT_NiinoFuka.jpeg" },
+  { name: { id: "Hashimoto Maki", en: "Hashimoto Maki", jp: "橋本真希" }, image: "RT_HashimotoMaki.jpeg" },
+  { name: { id: "Hayama Rico", en: "Hayama Rico", jp: "葉山莉瑚" }, image: "RT_HayamaRico.jpeg" },
+  { name: { id: "Mizuno Noa", en: "Mizuno Noa", jp: "水野乃愛" }, image: "RT_MizunoNoa.jpeg" },
+  { name: { id: "Momose Suzuna", en: "Momose Suzuna", jp: "百瀬紗菜" }, image: "RT_MomoseSuzuna.jpeg" },
+  { name: { id: "Yoshikawa Umi", en: "Yoshikawa Umi", jp: "吉川海未" }, image: "RT_YoshikawaUmi.jpeg" }
 ];
 
 // ===============================
