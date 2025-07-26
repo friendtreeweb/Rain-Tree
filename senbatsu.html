@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-key="pageTitle">Rain Tree Idola</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="back-home-button">
+            <button onclick="location.href='index.html'">← Kembali ke Menu Utama</button>
+        </div>
+
+        <div class="language-selector">
+            <button class="lang-button active" data-lang="id">ID</button>
+            <button class="lang-button" data-lang="en">EN</button>
+            <button class="lang-button" data-lang="jp">JP</button>
+        </div>
+
+        <h1 data-key="senbatsuTitle">Formasi Senbatsu Rain Tree</h1>
+
+        <div id="senbatsu-flow" class="flow-section">
+            <div class="senbatsu-controls">
+                <label for="senbatsu-size-select" data-key="selectSenbatsuMembers">Pilih Jumlah Anggota Senbatsu:</label>
+                <select id="senbatsu-size-select"></select>
+            </div>
+
+            <div id="senbatsu-formation" class="section hidden">
+                <h3 id="senbatsu-result-title">Formasi Senbatsu</h3>
+                <div id="senbatsu-slots-container" class="senbatsu-slots-container">
+                    </div>
+                <div class="share-download-options">
+                    <button id="download-senbatsu" data-key="downloadResults">Unduh Formasi (Gambar)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
